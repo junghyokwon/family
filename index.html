@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#cdd9ec">
+<title>겸율휘연, 행복한 우리가족 액티비티</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- 폰트를 렌더링 차단 없이 로드: 화면은 즉시 그려지고, 폰트는 준비되는 대로 자연스럽게 교체 -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap"></noscript>
+<style>
+  :root{
+    --font-body:'Gowun Batang','Apple SD Gothic Neo','Malgun Gothic',serif;
+    --font-head:'Gowun Batang','Apple SD Gothic Neo',serif;
+    --ink:#20242e; --muted:#6b7280; --brand:#3b6fe0; --brand2:#f2a53c;
+    --green:#12a06a; --red:#e0564b; --amber-bg:#ffe2b8; --amber-tx:#c47a12;
+    --glass:rgba(255,255,255,.55); --glass-strong:rgba(255,255,255,.72);
+    --line:rgba(255,255,255,.65); --hair:rgba(120,130,150,.18);
+    --shadow:0 10px 30px rgba(80,100,140,.18);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--font-body);
+    color:var(--ink);min-height:100vh;
+    background:linear-gradient(160deg,#bcd3ef 0%,#dfe6f0 42%,#f3ead6 100%);
+    background-attachment:fixed;-webkit-text-size-adjust:100%;
+    padding:0 0 40px;
+  }
+  /* 배경 은은한 컬러 블롭 */
+  .blob{position:fixed;border-radius:50%;filter:blur(60px);opacity:.5;z-index:0;pointer-events:none}
+  .blob.b1{width:280px;height:280px;background:#9dc0f0;top:-60px;left:-70px}
+  .blob.b2{width:300px;height:300px;background:#f4cf8f;bottom:-80px;right:-80px}
+  .app{position:relative;z-index:1;max-width:480px;margin:0 auto;padding:0 16px}
+  /* 다정한 느낌의 제목/숫자용 폰트 */
+  .top .title,.hero .big,.tile .n,h2.sec,.pill{font-family:var(--font-head);font-weight:700}
+
+  .glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+  .card{margin-bottom:14px;padding:18px}
+
+  /* 헤더 */
+  .top{padding:22px 6px 12px;display:flex;align-items:center;justify-content:space-between}
+  .top .title{font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.25;flex:1;padding-right:12px}
+  .top .logo{width:38px;height:38px;border-radius:12px;background:#1b1f2a;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto}
+
+  /* 히어로 */
+  .hero{padding:20px}
+  .hero .lab{font-size:12.5px;color:var(--muted);font-weight:600}
+  .hero .big{font-size:44px;font-weight:800;letter-spacing:-1.5px;line-height:1.05;margin:6px 0 8px;
+    display:flex;align-items:baseline;gap:6px}
+  .hero .big small{font-size:18px;font-weight:700;color:var(--muted)}
+  .pill{display:inline-flex;align-items:center;gap:4px;background:var(--amber-bg);color:var(--amber-tx);
+    font-size:12.5px;font-weight:800;padding:5px 11px;border-radius:999px}
+  .hero .sub{margin-top:12px;font-size:12.5px;color:var(--muted);
+    background:var(--glass-strong);display:inline-block;padding:6px 12px;border-radius:999px}
+
+  /* 탭 */
+  nav.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;scrollbar-width:none}
+  nav.tabs::-webkit-scrollbar{display:none}
+  nav.tabs button{flex:0 0 auto;border:1px solid var(--line);background:var(--glass);color:var(--muted);
+    padding:9px 16px;border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;white-space:nowrap;
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  nav.tabs button.active{background:#1b1f2a;color:#fff;border-color:#1b1f2a}
+  nav.tabs button.add{color:var(--brand);border-style:dashed}
+
+  h2.sec{margin:0 0 14px;font-size:14.5px;font-weight:800;display:flex;align-items:center;gap:7px}
+  h2.sec .r{margin-left:auto;font-weight:500;color:var(--muted);font-size:12px}
+
+  /* 폼 */
+  label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:700}
+  input,select{width:100%;padding:13px 13px;border:1px solid var(--hair);border-radius:13px;font-size:16px;
+    background:rgba(255,255,255,.7);color:var(--ink)}
+  input:focus,select:focus{outline:none;border-color:var(--brand);background:#fff}
+  .row3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .full{margin-bottom:12px}
+  .btn{background:#1b1f2a;color:#fff;border:none;padding:14px 16px;border-radius:14px;font-size:15.5px;
+    font-weight:800;cursor:pointer;width:100%}
+  .btn:active{transform:translateY(1px)}
+  .btn-soft{background:var(--glass-strong);color:var(--ink);border:1px solid var(--line)}
+  .btn-sm{width:auto;padding:9px 14px;font-size:13px;border-radius:11px}
+  .btn-blue{background:var(--brand)}
+
+  /* 타일 */
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .tile{background:var(--glass-strong);border:1px solid var(--line);border-radius:16px;padding:14px}
+  .tile .n{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1}
+  .tile .l{font-size:11.5px;color:var(--muted);margin-top:6px;font-weight:600}
+  .tile.blue .n{color:var(--brand)} .tile.gold .n{color:var(--brand2)}
+
+  /* 달력 */
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .cal-nav{background:var(--glass-strong);border:1px solid var(--line);border-radius:11px;width:36px;height:36px;
+    font-size:19px;cursor:pointer;color:var(--ink);line-height:1;display:flex;align-items:center;justify-content:center}
+  .cal-nav:active{transform:scale(.94)}
+  .cal-title{font-weight:800;font-size:15.5px}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+  .cal-w{text-align:center;font-size:11px;padding:2px 0;font-weight:700}
+  .cal-d{aspect-ratio:1;border-radius:12px;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;font-size:13.5px;gap:3px;position:relative}
+  .cal-d.pad{visibility:hidden}
+  .cal-d.on{background:rgba(59,111,224,.14);cursor:pointer;font-weight:800}
+  .cal-d.on:active{transform:scale(.93)}
+  .cal-d.today{outline:2px solid var(--brand);outline-offset:-2px}
+  .cal-d.sel{background:var(--brand);color:#fff!important}
+  .cal-d .dots{display:flex;gap:2px;height:5px;align-items:center}
+
+  /* 구성원 리스트 (이미지 코인리스트 스타일) */
+  .mrow{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--hair)}
+  .mrow:last-child{border-bottom:none}
+  .init{width:42px;height:42px;border-radius:14px;flex:0 0 auto;display:flex;align-items:center;
+    justify-content:center;color:#fff;font-weight:800;font-size:16px}
+  .mmeta{flex:1;min-width:0}
+  .mname{font-size:15px;font-weight:700}
+  .msub{font-size:12px;color:var(--muted);margin-top:2px}
+  .mval{text-align:right;flex:0 0 auto}
+  .mval .v1{font-size:15px;font-weight:800}
+  .mval .v2{font-size:11.5px;color:var(--muted);margin-top:2px}
+
+  /* 용돈 */
+  .allow{border:1px solid var(--line);background:var(--glass-strong);border-radius:16px;padding:14px;margin-bottom:11px}
+  .allow-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .allow-name{font-size:15px;font-weight:800;display:flex;align-items:center;gap:9px}
+  .chip{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:800}
+  .chip.a{background:var(--amber-bg);color:var(--amber-tx)}
+  .chip.g{background:#d9f2e6;color:var(--green)}
+  .prog{height:9px;background:rgba(120,130,150,.18);border-radius:999px;overflow:hidden;margin:8px 0}
+  .prog i{display:block;height:100%;border-radius:999px}
+  .astats{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap;margin-top:6px}
+  .astats b{color:var(--ink);font-size:13.5px}
+  .aact{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+
+  /* 기록 리스트 */
+  .item{display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid var(--hair)}
+  .item:last-child{border-bottom:none}
+  .dot{width:38px;height:38px;border-radius:12px;flex:0 0 auto;display:flex;align-items:center;
+    justify-content:center;color:#fff;font-weight:800;font-size:14px}
+  .item .meta{flex:1;min-width:0}
+  .item .meta .t{font-size:14px;font-weight:700}
+  .item .meta .s{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .amt{font-weight:800;font-size:14px;color:var(--green)}
+  .del{background:none;border:none;color:var(--red);font-size:12.5px;cursor:pointer;padding:6px;font-weight:700}
+  .del.edit{color:var(--brand)}
+  .muted{color:var(--muted);font-size:12.5px}
+  .empty{text-align:center;color:var(--muted);padding:24px 10px;font-size:13px}
+  .foot{display:flex;gap:8px;flex-wrap:wrap}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1b1f2a;color:#fff;
+    padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:60}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="blob b1"></div><div class="blob b2"></div>
+
+<div class="app">
+  <div class="top">
+    <div class="title">💕 겸율휘연, 행복한 우리가족 액티비티 💕</div>
+  </div>
+
+  <nav class="tabs" id="tabs"></nav>
+  <div id="view"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ===== 데이터 (이 브라우저에 자동 저장 · 백업 파일로 이동 가능) ===== */
+const KEY='familyActivity_v1';
+const CHILD_UNIT=5, RUNS_PER_PAY=3, PAY_AMOUNT=10000;
+
+function seed(){
+  return {
+    members:[
+      {id:'m1',name:'아빠',child:false},{id:'m2',name:'엄마',child:false},
+      {id:'m3',name:'정재겸',child:true},{id:'m4',name:'정재율',child:true},
+      {id:'m5',name:'정재휘',child:true},{id:'m6',name:'정재연',child:true},
+    ],
+    activities:[{id:'running',name:'러닝',type:'running'}],
+    runs:[], generic:{}, payouts:{},
+  };
+}
+let state=load();
+function load(){ try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.members) return s;}catch(e){} return seed(); }
+function save(){ localStorage.setItem(KEY,JSON.stringify(state)); }
+
+const COLORS=['#3b6fe0','#12a06a','#f2a53c','#db2777','#0891b2','#7c3aed'];
+function colorOf(id){const i=state.members.findIndex(m=>m.id===id);return COLORS[(i<0?0:i)%COLORS.length];}
+function member(id){return state.members.find(m=>m.id===id);}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function fmtDate(s){const[y,m,d]=s.split('-');return `${Number(m)}월 ${Number(d)}일`;}
+function fmtKm(v){return (Math.round(v*10)/10).toLocaleString();}
+function fmtWon(v){return v.toLocaleString()+'원';}
+function initial(n){return n.length>=3?n.slice(-1):n.slice(0,1);} // 정재겸→겸, 아빠→아
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1900);}
+
+let current='running';
+let calYM=null, calSel=null;  // 달력 표시 월 / 선택 날짜
+let editId=null;              // 수정 중인 기록 id
+
+/* ===== 탭 ===== */
+function renderTabs(){
+  const nav=document.getElementById('tabs');nav.innerHTML='';
+  state.activities.forEach(a=>{
+    const b=document.createElement('button');
+    b.textContent=(a.type==='running'?'🏃 ':'⭐ ')+a.name;
+    b.className=current===a.id?'active':'';
+    b.onclick=()=>{current=a.id;render();window.scrollTo({top:0});};
+    nav.appendChild(b);
+  });
+  const add=document.createElement('button');
+  add.textContent='＋ 액티비티 추가';add.className='add';add.onclick=addActivity;
+  nav.appendChild(add);
+}
+function addActivity(){
+  const name=prompt('추가할 액티비티 이름을 입력하세요 (예: 등산, 독서, 수영)');
+  if(!name)return;
+  const id='act_'+uid();
+  state.activities.push({id,name:name.trim(),type:'generic'});
+  state.generic[id]=[];current=id;save();render();
+  toast(`'${name}' 메뉴를 추가했어요`);
+}
+
+/* ===== 메인 ===== */
+function render(){
+  renderTabs();
+  const act=state.activities.find(a=>a.id===current)||state.activities[0];
+  if(act.type==='running') renderRunning(); else renderGeneric(act);
+}
+
+function renderRunning(){
+  const v=document.getElementById('view');v.innerHTML='';
+  const now=new Date(),yr=now.getFullYear(),mo=now.getMonth()+1;
+  const inMonth=r=>{const[y,m]=r.date.split('-').map(Number);return y===yr&&m===mo;};
+  const inYear=r=>Number(r.date.split('-')[0])===yr;
+
+  /* 러닝 달력 (상단) */
+  renderCalendar(v);
+
+  /* 입력 / 수정 폼 */
+  const edit=editId?state.runs.find(r=>r.id===editId):null;
+  const form=document.createElement('div');
+  form.className='glass card';form.id='runform';
+  form.innerHTML=`
+    <h2 class="sec">${edit?'✏️ 러닝 기록 수정':'✍️ 러닝 기록 추가'}</h2>
+    <div class="row3">
+      <div><label>날짜</label><input type="date" id="f_date" value="${edit?edit.date:todayStr()}"></div>
+      <div><label>누가</label><select id="f_member">${state.members.map(m=>`<option value="${m.id}" ${edit&&edit.memberId===m.id?'selected':''}>${m.name}</option>`).join('')}</select></div>
+    </div>
+    <div class="full"><label>거리 (km)</label><input type="number" inputmode="decimal" id="f_dist" min="0" step="0.1" placeholder="예: 5" value="${edit?edit.distance:''}"></div>
+    <div class="full"><label>메모 (선택)</label><input type="text" id="f_memo" placeholder="예: 한강에서, 비 와서 힘들었음" value="${edit?(edit.memo||'').replace(/"/g,'&quot;'):''}"></div>
+    <div class="foot">
+      <button class="btn" id="f_add" style="flex:1">${edit?'수정 저장':'기록 추가하기'}</button>
+      ${edit?`<button class="btn btn-soft btn-sm" id="f_cancel">취소</button>`:''}
+    </div>`;
+  form.querySelector('#f_add').onclick=()=>{
+    const date=form.querySelector('#f_date').value;
+    const memberId=form.querySelector('#f_member').value;
+    const distance=parseFloat(form.querySelector('#f_dist').value);
+    const memo=form.querySelector('#f_memo').value.trim();
+    if(!date){toast('날짜를 입력해 주세요');return;}
+    if(!distance||distance<=0){toast('거리를 올바르게 입력해 주세요');return;}
+    if(edit){edit.date=date;edit.memberId=memberId;edit.distance=distance;edit.memo=memo;editId=null;save();render();toast('기록을 수정했어요');}
+    else{state.runs.push({id:uid(),date,memberId,distance,memo});save();render();toast(`${member(memberId).name} · ${fmtKm(distance)}km 기록 완료!`);}
+  };
+  if(edit){form.querySelector('#f_cancel').onclick=()=>{editId=null;render();};}
+
+  /* 우리 가족 러너들 : 올해 횟수·거리 + 이번 달 */
+  const per=document.createElement('div');
+  per.className='glass card';
+  per.innerHTML=`<h2 class="sec">👨‍👩‍👧‍👦 우리 가족 러너들 <span class="r">올해 · 이번 달</span></h2>`;
+  state.members.forEach(m=>{
+    const yr_=state.runs.filter(r=>r.memberId===m.id&&inYear(r));
+    const mo_=state.runs.filter(r=>r.memberId===m.id&&inMonth(r));
+    const yc=yr_.length, yk=yr_.reduce((s,r)=>s+r.distance,0);
+    const mc=mo_.length, mk=mo_.reduce((s,r)=>s+r.distance,0);
+    const c=colorOf(m.id);
+    const row=document.createElement('div');
+    row.className='mrow';
+    row.innerHTML=`
+      <span class="init" style="background:${c}">${initial(m.name)}</span>
+      <div class="mmeta">
+        <div class="mname">${m.name}</div>
+        <div class="msub">올해 ${yc}회 · ${fmtKm(yk)}km</div>
+      </div>
+      <div class="mval">
+        <div class="v1">${mc}회</div>
+        <div class="v2">이번 달 ${fmtKm(mk)}km</div>
+      </div>`;
+    per.appendChild(row);
+  });
+  v.appendChild(per);
+
+  /* 입력/수정 폼은 러너들 아래에 배치 */
+  v.appendChild(form);
+  if(edit) form.scrollIntoView({behavior:'smooth',block:'center'});
+
+  renderAllowance(v);
+
+  /* 최근 기록 */
+  const recent=[...state.runs].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,30);
+  const list=document.createElement('div');list.className='glass card';
+  list.innerHTML=`<h2 class="sec">📅 최근 기록 <span class="r">최근 30건</span></h2>`;
+  if(!recent.length){list.appendChild(el(`<div class="empty">아직 기록이 없어요. 위에서 첫 러닝을 추가해 보세요!</div>`));}
+  else recent.forEach(r=>{
+    const m=member(r.memberId);const c=colorOf(r.memberId);
+    const item=document.createElement('div');item.className='item';
+    item.innerHTML=`
+      <span class="dot" style="background:${c}">${m?initial(m.name):'?'}</span>
+      <div class="meta">
+        <div class="t">${m?m.name:'(삭제됨)'} ${r.distance>=CHILD_UNIT?'<span class="chip g" style="font-size:10px">5km+</span>':''}</div>
+        <div class="s">${fmtDate(r.date)}${r.memo?' · '+r.memo:''}</div>
+      </div>
+      <span class="amt">+${fmtKm(r.distance)}km</span>
+      <button class="del edit">수정</button>
+      <button class="del">삭제</button>`;
+    item.querySelector('.edit').onclick=()=>{editId=r.id;render();};
+    item.querySelector('.del:not(.edit)').onclick=()=>{if(confirm('이 기록을 삭제할까요?')){state.runs=state.runs.filter(x=>x.id!==r.id);save();render();toast('삭제했어요');}};
+    list.appendChild(item);
+  });
+  v.appendChild(list);
+}
+
+function el(html){const d=document.createElement('div');d.innerHTML=html;return d.firstElementChild;}
+
+/* ===== 러닝 달력 ===== */
+function renderCalendar(v){
+  const now=new Date();
+  if(!calYM) calYM={y:now.getFullYear(), m:now.getMonth()+1};
+  const {y,m}=calYM;
+  const pad2=n=>String(n).padStart(2,'0');
+  const startDow=new Date(y,m-1,1).getDay();   // 0=일
+  const days=new Date(y,m,0).getDate();
+  const byDate={};
+  state.runs.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r);});
+  const ranDays=Object.keys(byDate).filter(k=>k.startsWith(`${y}-${pad2(m)}`)).length;
+  const tStr=todayStr();
+
+  const W=['일','월','화','수','목','금','토'];
+  let grid=W.map((w,i)=>`<div class="cal-w" style="color:${i===0?'var(--red)':i===6?'var(--brand)':'var(--muted)'}">${w}</div>`).join('');
+  for(let i=0;i<startDow;i++) grid+=`<div class="cal-d pad"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${y}-${pad2(m)}-${pad2(d)}`;
+    const runs=byDate[ds]||[];
+    const dow=(startDow+d-1)%7;
+    const col=dow===0?'var(--red)':dow===6?'var(--brand)':'var(--ink)';
+    const dots=[...new Set(runs.map(r=>r.memberId))].slice(0,4)
+      .map(id=>`<span style="width:5px;height:5px;border-radius:50%;background:${colorOf(id)};display:inline-block"></span>`).join('');
+    grid+=`<div class="cal-d ${runs.length?'on':''} ${ds===tStr?'today':''} ${calSel===ds?'sel':''}" data-d="${runs.length?ds:''}" style="color:${col}">
+      <span>${d}</span>${runs.length?`<span class="dots">${dots}</span>`:''}</div>`;
+  }
+
+  const card=document.createElement('div');card.className='glass card';
+  card.innerHTML=`
+    <h2 class="sec">📆 러닝 달력</h2>
+    <div class="cal-head">
+      <button class="cal-nav" id="cal_prev">‹</button>
+      <div class="cal-title">${y}년 ${m}월 <span class="muted" style="font-weight:400">· ${ranDays}일 달림</span></div>
+      <button class="cal-nav" id="cal_next">›</button>
+    </div>
+    <div class="cal-grid">${grid}</div>
+    <div id="cal_detail"></div>`;
+  v.appendChild(card);
+
+  card.querySelector('#cal_prev').onclick=()=>{calYM={y:m===1?y-1:y,m:m===1?12:m-1};calSel=null;render();};
+  card.querySelector('#cal_next').onclick=()=>{calYM={y:m===12?y+1:y,m:m===12?1:m+1};calSel=null;render();};
+  card.querySelectorAll('.cal-d.on').forEach(c=>{c.onclick=()=>{const d=c.getAttribute('data-d');calSel=(calSel===d?null:d);render();};});
+
+  if(calSel && byDate[calSel]){
+    const det=card.querySelector('#cal_detail');
+    det.innerHTML=`<div style="margin:14px 0 4px;font-weight:800;font-size:13.5px;color:var(--brand)">${fmtDate(calSel)} 기록</div>`;
+    byDate[calSel].forEach(r=>{
+      const mm=member(r.memberId);
+      const item=document.createElement('div');item.className='item';
+      item.innerHTML=`<span class="dot" style="background:${colorOf(r.memberId)}">${mm?initial(mm.name):'?'}</span>
+        <div class="meta"><div class="t">${mm?mm.name:'(삭제됨)'} ${r.distance>=CHILD_UNIT?'<span class="chip g" style="font-size:10px">5km+</span>':''}</div>
+        <div class="s">${r.memo||'&nbsp;'}</div></div>
+        <span class="amt">+${fmtKm(r.distance)}km</span>
+        <button class="del edit">수정</button><button class="del">삭제</button>`;
+      item.querySelector('.edit').onclick=()=>{editId=r.id;render();};
+      item.querySelector('.del:not(.edit)').onclick=()=>{if(confirm('이 기록을 삭제할까요?')){state.runs=state.runs.filter(x=>x.id!==r.id);save();render();toast('삭제했어요');}};
+      det.appendChild(item);
+    });
+  }
+}
+
+/* ===== 용돈 ===== */
+function renderAllowance(v){
+  const kids=state.members.filter(m=>m.child);
+  const card=document.createElement('div');card.className='glass card';
+  card.innerHTML=`<h2 class="sec">💰 아이 용돈 <span class="r">5km+ ${RUNS_PER_PAY}회당 ${fmtWon(PAY_AMOUNT)}</span></h2>`;
+  let totalOut=0;
+  kids.forEach(m=>{
+    const qual=state.runs.filter(r=>r.memberId===m.id&&r.distance>=CHILD_UNIT).length;
+    const earned=Math.floor(qual/RUNS_PER_PAY)*PAY_AMOUNT;
+    const paid=(state.payouts[m.id]||0)*PAY_AMOUNT;
+    const out=earned-paid; totalOut+=out;
+    const toward=qual%RUNS_PER_PAY;
+    const c=colorOf(m.id);
+    const box=document.createElement('div');box.className='allow';
+    box.innerHTML=`
+      <div class="allow-top">
+        <div class="allow-name"><span class="init" style="width:30px;height:30px;border-radius:10px;font-size:13px;background:${c}">${initial(m.name)}</span>${m.name}</div>
+        <div>${out>0?`<span class="chip a">미지급 ${fmtWon(out)}</span>`:(earned>0?`<span class="chip g">정산 완료</span>`:`<span class="chip" style="background:rgba(120,130,150,.15);color:var(--muted)">진행 중</span>`)}</div>
+      </div>
+      <div class="muted">다음 ${fmtWon(PAY_AMOUNT)}까지 <b style="color:${c}">${toward}/${RUNS_PER_PAY}회</b></div>
+      <div class="prog"><i style="width:${(toward/RUNS_PER_PAY)*100}%;background:${c}"></i></div>
+      <div class="astats">
+        <span>5km+ 러닝 <b>${qual}회</b></span>
+        <span>적립 <b>${fmtWon(earned)}</b></span>
+        <span>지급 <b>${fmtWon(paid)}</b></span>
+        <span>미지급 <b style="color:${out>0?'var(--amber-tx)':'inherit'}">${fmtWon(out)}</b></span>
+      </div>
+      <div class="aact">
+        <button class="btn btn-sm btn-blue" data-pay ${out>0?'':'disabled style="opacity:.45"'}>1만원 지급 처리</button>
+        ${(state.payouts[m.id]||0)>0?`<button class="btn btn-sm btn-soft" data-undo>지급 취소</button>`:''}
+      </div>`;
+    const pay=box.querySelector('[data-pay]');
+    if(pay&&out>0) pay.onclick=()=>{state.payouts[m.id]=(state.payouts[m.id]||0)+1;save();render();toast(`${m.name} ${fmtWon(PAY_AMOUNT)} 지급 처리`);};
+    const undo=box.querySelector('[data-undo]');
+    if(undo) undo.onclick=()=>{state.payouts[m.id]=Math.max(0,(state.payouts[m.id]||0)-1);save();render();toast('지급 1건 취소');};
+    card.appendChild(box);
+  });
+  const sum=document.createElement('div');
+  sum.style.cssText='text-align:right;font-size:12.5px;color:var(--muted);margin-top:2px';
+  sum.innerHTML=`현재 미지급 합계 <b style="color:var(--amber-tx);font-size:15px">${fmtWon(totalOut)}</b>`;
+  card.appendChild(sum);
+  v.appendChild(card);
+}
+
+/* ===== 일반 액티비티 ===== */
+function renderGeneric(act){
+  const v=document.getElementById('view');v.innerHTML='';
+  if(!state.generic[act.id]) state.generic[act.id]=[];
+  const recs=state.generic[act.id];
+  const now=new Date(),yr=now.getFullYear(),mo=now.getMonth()+1;
+  const yCount=recs.filter(r=>Number(r.date.split('-')[0])===yr).length;
+  const mCount=recs.filter(r=>{const[y,m]=r.date.split('-').map(Number);return y===yr&&m===mo;}).length;
+
+  const form=document.createElement('div');form.className='glass card';
+  form.innerHTML=`
+    <h2 class="sec">✍️ ${act.name} 기록 추가 <button class="del" id="rm_act" style="margin-left:auto">메뉴 삭제</button></h2>
+    <div class="row3">
+      <div><label>날짜</label><input type="date" id="g_date" value="${todayStr()}"></div>
+      <div><label>누가</label><select id="g_member">${state.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('')}</select></div>
+    </div>
+    <div class="full"><label>값 (선택, 숫자)</label><input type="number" inputmode="decimal" id="g_val" step="0.1" placeholder="예: 시간·횟수"></div>
+    <div class="full"><label>메모 (선택)</label><input type="text" id="g_memo" placeholder="내용을 적어주세요"></div>
+    <button class="btn" id="g_add">기록 추가하기</button>`;
+  v.appendChild(form);
+  form.querySelector('#rm_act').onclick=()=>{
+    if(confirm(`'${act.name}' 메뉴와 기록을 모두 삭제할까요?`)){
+      state.activities=state.activities.filter(a=>a.id!==act.id);
+      delete state.generic[act.id];current='running';save();render();toast('메뉴를 삭제했어요');
+    }};
+  form.querySelector('#g_add').onclick=()=>{
+    const date=form.querySelector('#g_date').value;
+    const memberId=form.querySelector('#g_member').value;
+    const val=parseFloat(form.querySelector('#g_val').value);
+    const memo=form.querySelector('#g_memo').value.trim();
+    if(!date){toast('날짜를 입력해 주세요');return;}
+    recs.push({id:uid(),date,memberId,value:isNaN(val)?null:val,memo});
+    save();render();toast('기록 완료!');
+  };
+
+  const stat=document.createElement('div');stat.className='glass card';
+  stat.innerHTML=`<h2 class="sec">📊 ${act.name} 통계</h2>
+    <div class="tiles">
+      <div class="tile"><div class="n">${mCount}<span style="font-size:14px">회</span></div><div class="l">이번 달 횟수</div></div>
+      <div class="tile blue"><div class="n">${yCount}<span style="font-size:14px">회</span></div><div class="l">올해 횟수</div></div>
+      <div class="tile"><div class="n">${recs.length}<span style="font-size:14px">회</span></div><div class="l">전체 누적</div></div>
+      <div class="tile gold"><div class="n">${state.members.filter(m=>recs.some(r=>r.memberId===m.id)).length}<span style="font-size:14px">명</span></div><div class="l">참여 인원</div></div>
+    </div>`;
+  v.appendChild(stat);
+
+  const list=document.createElement('div');list.className='glass card';
+  list.innerHTML=`<h2 class="sec">📅 ${act.name} 기록</h2>`;
+  const sorted=[...recs].sort((a,b)=>b.date.localeCompare(a.date)||b.id.localeCompare(a.id)).slice(0,30);
+  if(!sorted.length) list.appendChild(el(`<div class="empty">아직 기록이 없어요.</div>`));
+  else sorted.forEach(r=>{
+    const m=member(r.memberId);const c=colorOf(r.memberId);
+    const item=document.createElement('div');item.className='item';
+    item.innerHTML=`<span class="dot" style="background:${c}">${m?initial(m.name):'?'}</span>
+      <div class="meta"><div class="t">${m?m.name:'(삭제됨)'}${r.value!=null?' · '+r.value:''}</div>
+      <div class="s">${fmtDate(r.date)}${r.memo?' · '+r.memo:''}</div></div>
+      <button class="del">삭제</button>`;
+    item.querySelector('.del').onclick=()=>{if(confirm('삭제할까요?')){state.generic[act.id]=recs.filter(x=>x.id!==r.id);save();render();}};
+    list.appendChild(item);
+  });
+  v.appendChild(list);
+}
+
+render();
+</script>
+</body>
+</html>
