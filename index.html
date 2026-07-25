@@ -389,7 +389,7 @@ let editId=null;              // 수정 중인 기록 id
 let recentFilter='all';       // 러닝 기록 사람 필터 (전체/구성원id)
 let session=(function(){try{return localStorage.getItem('familySession')||null;}catch(e){return null;}})(); // 로그인한 사람(폰별 유지)
 let loginSel=null, loginPin=''; // 로그인 화면 상태
-let dashRange='month';        // 대시보드 기간: week|month|all
+let dashRange='week';         // 대시보드 기간: week|month|all
 let mDraft=null;              // 미션 부여 폼 초안 { title, criteria, due, ids[] }
 function isParent(id){const m=member(id);return m&&!m.child;}
 function curUser(){return session?member(session):null;}
@@ -519,12 +519,17 @@ function renderMission(){
   }
   // 대시보드
   const now=new Date(), tS=todayStr();
+  const wom=day=>Math.ceil(day/7);   // 그 달의 주차 (1~7일=1주차, 8~14일=2주차 …)
   const inRange=ds=>{
     if(dashRange==='all') return true;
     if(!ds) return false;
-    if(dashRange==='month') return ds.slice(0,7)===tS.slice(0,7);
-    const diff=(now-new Date(ds+'T00:00:00'))/86400000; return diff>=0&&diff<7; // 최근 7일
+    if(ds.slice(0,7)!==tS.slice(0,7)) return false;        // 이번 달이 아니면 제외 (주간·월간 공통)
+    if(dashRange==='month') return true;                    // 월간: 이번 달 전체
+    return wom(parseInt(ds.slice(8,10),10))===wom(now.getDate()); // 주간: 같은 주차만
   };
+  const periodTxt = dashRange==='week' ? `${now.getMonth()+1}월 ${wom(now.getDate())}주차`
+    : dashRange==='month' ? `${now.getFullYear()}년 ${now.getMonth()+1}월`
+    : '전체 기간';
   const dash=document.createElement('div'); dash.className='glass card';
   dash.appendChild(el(`<h2 class="sec" style="justify-content:space-between"><span>📊 미션 대시보드</span>
     <span class="seg">
@@ -532,6 +537,7 @@ function renderMission(){
       <button data-r="month" class="${dashRange==='month'?'on':''}">월간</button>
       <button data-r="all" class="${dashRange==='all'?'on':''}">전체</button>
     </span></h2>`));
+  dash.appendChild(el(`<div class="muted" style="margin:-4px 2px 12px;font-weight:700">🗓️ ${periodTxt} 기준</div>`));
   const dgrid=document.createElement('div'); dgrid.className='dash';
   kids.forEach(k=>{
     const ms=state.missions.filter(x=>x.assigneeId===k.id && inRange(x.createdAt));
