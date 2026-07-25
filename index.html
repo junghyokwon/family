@@ -184,6 +184,61 @@
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#1b1f2a;color:#fff;
     padding:12px 20px;border-radius:12px;font-size:13.5px;opacity:0;pointer-events:none;transition:.25s;z-index:60}
   .toast.show{opacity:1}
+  /* 사용자 칩 / 로그인 */
+  #userchip{flex:0 0 auto}
+  .uchip{display:flex;align-items:center;gap:6px;background:var(--glass-strong);border:1px solid var(--line);
+    border-radius:999px;padding:4px 9px 4px 5px;cursor:pointer;font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .uav{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:800;flex:0 0 auto}
+  .login-wrap{max-width:430px;margin:5vh auto 0;text-align:center;padding:0 4px}
+  .login-wrap h2{font-size:20px;font-weight:800;margin:0 0 4px}
+  .login-wrap p{color:var(--muted);font-size:13px;margin:0 0 22px}
+  .profiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .pfbtn{background:var(--glass);border:1px solid var(--line);border-radius:18px;padding:16px 6px;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:8px;backdrop-filter:blur(10px)}
+  .pfbtn:active{transform:scale(.96)}
+  .pfav{width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:800}
+  .pfname{font-size:14px;font-weight:800}
+  .pfrole{font-size:10.5px;color:var(--muted)}
+  .pinbox{max-width:290px;margin:0 auto}
+  .pindots{display:flex;justify-content:center;gap:14px;margin:20px 0 24px}
+  .pindot{width:15px;height:15px;border-radius:50%;border:2px solid var(--brand)}
+  .pindot.on{background:var(--brand)}
+  .pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}
+  .pinkey{background:var(--glass-strong);border:1px solid var(--line);border-radius:16px;padding:15px 0;font-size:22px;
+    font-weight:800;cursor:pointer;color:var(--ink)}
+  .pinkey:active{transform:scale(.94);background:#fff}
+  .pinkey.fn{font-size:13px;font-weight:700;color:var(--muted)}
+  .shake{animation:shk .3s}
+  @keyframes shk{25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+  /* 탭 배지 */
+  .tabbadge{background:var(--red);color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:0 6px;margin-left:5px}
+  /* 미션 */
+  .mi{background:var(--glass-strong);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:10px}
+  .mi.overdue{border-color:#f2b8b0;background:rgba(255,244,242,.75)}
+  .mi-top{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+  .mi-title{font-size:14.5px;font-weight:800;flex:1}
+  .mi-crit{font-size:12.5px;color:var(--muted);margin:3px 0 7px;line-height:1.4}
+  .mi-meta{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--muted)}
+  .mi-meta .od{color:var(--red);font-weight:800}
+  .mi-act{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+  .st{font-size:11px;font-weight:800;padding:2px 9px;border-radius:999px;flex:0 0 auto}
+  .st.assigned{background:#e7edfb;color:var(--brand)}
+  .st.submitted{background:var(--amber-bg);color:var(--amber-tx)}
+  .st.approved{background:#d9f2e6;color:var(--green)}
+  .st.rejected{background:#fde0dc;color:var(--red)}
+  .chk{display:flex;flex-wrap:wrap;gap:8px}
+  .chkbtn{border:1px solid var(--line);background:var(--glass-strong);border-radius:12px;padding:9px 12px;cursor:pointer;
+    font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--ink)}
+  .chkbtn.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .chkbox{width:17px;height:17px;border-radius:5px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+  .dash{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .dcard{background:var(--glass-strong);border:1px solid var(--line);border-radius:14px;padding:12px 13px}
+  .dcard .dn{font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px}
+  .dcard .drow{display:flex;gap:12px;margin-top:9px}
+  .dcard .dcol{flex:1;text-align:center}
+  .dcard .dcol .dv{font-size:19px;font-weight:800}
+  .dcard .dcol .dl{font-size:10.5px;color:var(--muted);margin-top:1px}
+  .msec{font-size:12.5px;font-weight:800;color:var(--muted);margin:4px 2px 9px}
 </style>
 </head>
 <body>
@@ -192,6 +247,7 @@
 <div class="app">
   <div class="top">
     <div class="title">💕 겸율휘연, 행복한 우리가족 액티비티 💕</div>
+    <div id="userchip"></div>
   </div>
 
   <nav class="tabs" id="tabs"></nav>
@@ -216,9 +272,19 @@ function seed(){
       {id:'m3',name:'정재겸',child:true,unit:5},{id:'m4',name:'정재율',child:true,unit:5},
       {id:'m5',name:'정재휘',child:true,unit:5},{id:'m6',name:'정재연',child:true,unit:3},
     ],
-    activities:[{id:'running',name:'러닝',type:'running'}],
+    activities:[{id:'running',name:'러닝',type:'running'},{id:'mission',name:'미션',type:'mission'}],
     runs:[], generic:{}, payouts:{},
+    missions:[],
+    pins:{m1:'0000',m2:'9999',m3:'1111',m4:'2222',m5:'3333',m6:'4444'},
   };
+}
+// 기존 데이터에 미션 관련 항목이 없으면 채워 넣기(마이그레이션)
+function normalize(){
+  let changed=false;
+  if(!state.missions){state.missions=[];changed=true;}
+  if(!state.pins){state.pins={m1:'0000',m2:'9999',m3:'1111',m4:'2222',m5:'3333',m6:'4444'};changed=true;}
+  if(!state.activities.some(a=>a.id==='mission')){state.activities.splice(1,0,{id:'mission',name:'미션',type:'mission'});changed=true;}
+  return changed;
 }
 let state=seed();               // 로딩 전 임시 값 (init에서 실제 공유 데이터로 교체)
 let _saving=false, _pending=false, _lastJSON='', _pendingRender=false;
@@ -251,6 +317,7 @@ async function init(){
     const {data}=await sb.from('app_state').select('data').eq('id',1).single();
     if(data&&data.data&&data.data.members) state=data.data;
     else { state=seed(); await pushState(); }   // 최초 1회 초기 데이터 심기
+    if(normalize()) await pushState();           // 미션·PIN 항목 보강
   }catch(e){ console.warn('불러오기 오류',e); toast('데이터 서버 연결을 확인해 주세요'); }
   render();
   sb.channel('app_state_rt')    // 실시간: 누가 바꾸면 즉시 반영
@@ -278,20 +345,36 @@ let current='running';
 let calYM=null, calSel=null;  // 달력 표시 월 / 선택 날짜
 let editId=null;              // 수정 중인 기록 id
 let recentFilter='all';       // 러닝 기록 사람 필터 (전체/구성원id)
+let session=(function(){try{return localStorage.getItem('familySession')||null;}catch(e){return null;}})(); // 로그인한 사람(폰별 유지)
+let loginSel=null, loginPin=''; // 로그인 화면 상태
+let dashRange='month';        // 대시보드 기간: week|month|all
+let mDraft=null;              // 미션 부여 폼 초안 { title, criteria, due, ids[] }
+function isParent(id){const m=member(id);return m&&!m.child;}
+function curUser(){return session?member(session):null;}
 
 /* ===== 탭 ===== */
 function renderTabs(){
   const nav=document.getElementById('tabs');nav.innerHTML='';
   state.activities.forEach(a=>{
     const b=document.createElement('button');
-    b.textContent=(a.type==='running'?'🏃 ':'⭐ ')+a.name;
+    const emo=a.type==='running'?'🏃 ':(a.type==='mission'?'🎯 ':'⭐ ');
+    b.innerHTML=emo+a.name+(a.type==='mission'?missionBadge():'');
     b.className=current===a.id?'active':'';
     b.onclick=()=>{current=a.id;render();window.scrollTo({top:0});};
     nav.appendChild(b);
   });
-  const add=document.createElement('button');
-  add.textContent='＋ 액티비티 추가';add.className='add';add.onclick=addActivity;
-  nav.appendChild(add);
+  if(isParent(session)){
+    const add=document.createElement('button');
+    add.textContent='＋ 액티비티 추가';add.className='add';add.onclick=addActivity;
+    nav.appendChild(add);
+  }
+}
+function missionBadge(){
+  const me=curUser(); if(!me) return '';
+  const n = me.child
+    ? state.missions.filter(x=>x.assigneeId===me.id && (x.status==='assigned'||x.status==='rejected')).length
+    : state.missions.filter(x=>x.status==='submitted').length;
+  return n>0?`<span class="tabbadge">${n}</span>`:'';
 }
 function addActivity(){
   const name=prompt('추가할 액티비티 이름을 입력하세요 (예: 등산, 독서, 수영)');
@@ -304,9 +387,230 @@ function addActivity(){
 
 /* ===== 메인 ===== */
 function render(){
+  if(!session || !member(session)){ renderLogin(); return; }
+  renderHeaderUser();
   renderTabs();
   const act=state.activities.find(a=>a.id===current)||state.activities[0];
-  if(act.type==='running') renderRunning(); else renderGeneric(act);
+  if(act.type==='running') renderRunning();
+  else if(act.type==='mission') renderMission();
+  else renderGeneric(act);
+}
+
+/* ===== 로그인 (프로필 + PIN) ===== */
+function renderHeaderUser(){
+  const box=document.getElementById('userchip'); if(!box) return;
+  const me=curUser(); if(!me){box.innerHTML='';return;}
+  box.innerHTML='';
+  const b=document.createElement('button');b.className='uchip';
+  b.innerHTML=`<span class="uav" style="background:${colorOf(me.id)}">${initial(me.name)}</span>${me.name} ⌄`;
+  b.onclick=()=>{ if(confirm('로그아웃하고 다른 사람으로 전환할까요?')) logout(); };
+  box.appendChild(b);
+}
+function logout(){ session=null; try{localStorage.removeItem('familySession');}catch(e){} loginSel=null;loginPin=''; current='running'; render(); }
+function renderLogin(){
+  const uc=document.getElementById('userchip'); if(uc) uc.innerHTML='';
+  document.getElementById('tabs').innerHTML='';
+  const v=document.getElementById('view'); v.innerHTML='';
+  const wrap=document.createElement('div'); wrap.className='login-wrap';
+  if(!loginSel){
+    wrap.appendChild(el(`<div><h2>누구세요?</h2><p>프로필을 고르고 PIN을 입력하세요</p></div>`));
+    const grid=document.createElement('div'); grid.className='profiles';
+    state.members.forEach(m=>{
+      const btn=document.createElement('button'); btn.className='pfbtn';
+      btn.innerHTML=`<span class="pfav" style="background:${colorOf(m.id)}">${initial(m.name)}</span>
+        <span class="pfname">${m.name}</span><span class="pfrole">${m.child?'아이':'부모'}</span>`;
+      btn.onclick=()=>{loginSel=m.id;loginPin='';render();};
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+  } else {
+    const m=member(loginSel);
+    wrap.appendChild(el(`<div><h2>${m.name}</h2><p>PIN 4자리를 입력하세요</p></div>`));
+    const box=document.createElement('div'); box.className='pinbox';
+    box.appendChild(el(`<div class="pindots">${[0,1,2,3].map(i=>`<span class="pindot ${i<loginPin.length?'on':''}"></span>`).join('')}</div>`));
+    const pad=document.createElement('div'); pad.className='pinpad';
+    [['1'],['2'],['3'],['4'],['5'],['6'],['7'],['8'],['9'],['back','⌫'],['0'],['prev','뒤로']].forEach(k=>{
+      const key=k[0];
+      const b=document.createElement('button');
+      b.className='pinkey'+((key==='back'||key==='prev')?' fn':'');
+      b.textContent=k[1]||key;
+      b.onclick=()=>{
+        if(key==='back'){loginPin=loginPin.slice(0,-1);render();}
+        else if(key==='prev'){loginSel=null;loginPin='';render();}
+        else if(loginPin.length<4){ loginPin+=key; if(loginPin.length===4) tryLogin(m.id,loginPin); else render(); }
+      };
+      pad.appendChild(b);
+    });
+    box.appendChild(pad);
+    wrap.appendChild(box);
+  }
+  v.appendChild(wrap);
+}
+function tryLogin(id,pin){
+  if((state.pins[id]||'')===pin){
+    session=id; try{localStorage.setItem('familySession',id);}catch(e){}
+    loginSel=null;loginPin=''; current='running'; render(); toast(`${member(id).name}님 환영해요!`);
+  } else {
+    loginPin=''; render();
+    const w=document.querySelector('.pinbox'); if(w){w.classList.add('shake');setTimeout(()=>w.classList.remove('shake'),320);}
+    toast('PIN이 맞지 않아요');
+  }
+}
+
+/* ===== 미션 ===== */
+function renderMission(){
+  const v=document.getElementById('view'); v.innerHTML='';
+  const me=curUser(); const kids=state.members.filter(m=>m.child);
+  // 대시보드
+  const now=new Date(), tS=todayStr();
+  const inRange=ds=>{
+    if(dashRange==='all') return true;
+    if(!ds) return false;
+    if(dashRange==='month') return ds.slice(0,7)===tS.slice(0,7);
+    const diff=(now-new Date(ds+'T00:00:00'))/86400000; return diff>=0&&diff<7; // 최근 7일
+  };
+  const dash=document.createElement('div'); dash.className='glass card';
+  dash.appendChild(el(`<h2 class="sec" style="justify-content:space-between"><span>📊 미션 대시보드</span>
+    <span class="seg">
+      <button data-r="week" class="${dashRange==='week'?'on':''}">주간</button>
+      <button data-r="month" class="${dashRange==='month'?'on':''}">월간</button>
+      <button data-r="all" class="${dashRange==='all'?'on':''}">전체</button>
+    </span></h2>`));
+  const dgrid=document.createElement('div'); dgrid.className='dash';
+  kids.forEach(k=>{
+    const ms=state.missions.filter(x=>x.assigneeId===k.id && inRange(x.createdAt));
+    const assigned=ms.length, done=ms.filter(x=>x.status==='approved').length;
+    const c=colorOf(k.id);
+    dgrid.appendChild(el(`<div class="dcard">
+      <div class="dn"><span class="uav" style="width:22px;height:22px;border-radius:8px;background:${c}">${initial(k.name)}</span>${k.name}</div>
+      <div class="drow">
+        <div class="dcol"><div class="dv" style="color:${c}">${assigned}</div><div class="dl">부여</div></div>
+        <div class="dcol"><div class="dv" style="color:var(--green)">${done}</div><div class="dl">완료</div></div>
+        <div class="dcol"><div class="dv">${assigned-done}</div><div class="dl">진행중</div></div>
+      </div></div>`));
+  });
+  dash.appendChild(dgrid);
+  v.appendChild(dash);
+  dash.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{dashRange=b.getAttribute('data-r');render();});
+
+  if(!me.child) renderMissionParent(v, me, kids);
+  else renderMissionChild(v, me);
+}
+function renderMissionParent(v, me, kids){
+  if(!mDraft) mDraft={title:'',criteria:'',due:todayStr(),ids:[]};
+  const form=document.createElement('div'); form.className='glass card';
+  form.appendChild(el(`<h2 class="sec">✍️ 미션 부여</h2>`));
+  form.appendChild(el(`<label>대상자 (여러 명 선택 가능)</label>`));
+  const chk=document.createElement('div'); chk.className='chk'; chk.style.marginBottom='12px';
+  kids.forEach(k=>{
+    const on=mDraft.ids.includes(k.id);
+    const b=document.createElement('button'); b.className='chkbtn'+(on?' on':'');
+    b.innerHTML=`<span class="chkbox">${on?'✓':''}</span>${k.name}`;
+    b.onclick=()=>{ mDraft.ids=on?mDraft.ids.filter(x=>x!==k.id):mDraft.ids.concat(k.id); render(); };
+    chk.appendChild(b);
+  });
+  form.appendChild(chk);
+  const body=el(`<div>
+    <div class="full"><label>미션 내용</label><input type="text" id="m_title" placeholder="예: 방 정리하기" value="${(mDraft.title||'').replace(/"/g,'&quot;')}"></div>
+    <div class="full"><label>완료 기준</label><input type="text" id="m_crit" placeholder="예: 책상·바닥 정리 후 사진 확인" value="${(mDraft.criteria||'').replace(/"/g,'&quot;')}"></div>
+    <div class="full"><label>마감일</label><input type="date" id="m_due" value="${mDraft.due}"></div>
+    <button class="btn" id="m_add">미션 부여하기</button></div>`);
+  form.appendChild(body);
+  v.appendChild(form);
+  form.querySelector('#m_title').oninput=e=>mDraft.title=e.target.value;
+  form.querySelector('#m_crit').oninput=e=>mDraft.criteria=e.target.value;
+  form.querySelector('#m_due').oninput=e=>mDraft.due=e.target.value;
+  form.querySelector('#m_add').onclick=()=>{
+    const title=(mDraft.title||'').trim(), crit=(mDraft.criteria||'').trim(), due=mDraft.due;
+    if(!mDraft.ids.length){toast('대상자를 선택해 주세요');return;}
+    if(!title){toast('미션 내용을 입력해 주세요');return;}
+    if(!crit){toast('완료 기준을 입력해 주세요');return;}
+    if(!due){toast('마감일을 정해 주세요');return;}
+    mDraft.ids.forEach(kid=>state.missions.push({id:uid(),title,criteria:crit,assigneeId:kid,assignerId:me.id,dueDate:due,createdAt:todayStr(),status:'assigned',submittedAt:null,approvedAt:null}));
+    const n=mDraft.ids.length; mDraft=null; save(); render(); toast(`미션을 ${n}명에게 부여했어요`);
+  };
+  // 승인 대기
+  const pend=state.missions.filter(x=>x.status==='submitted').sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+  const s1=document.createElement('div'); s1.className='glass card';
+  s1.appendChild(el(`<h2 class="sec">⏳ 승인 대기 <span class="r">${pend.length}건</span></h2>`));
+  if(!pend.length) s1.appendChild(el(`<div class="empty">승인 대기 중인 미션이 없어요.</div>`));
+  else pend.forEach(x=>s1.appendChild(missionCard(x,'parent')));
+  v.appendChild(s1);
+  // 진행 중
+  const prog=state.missions.filter(x=>x.status==='assigned'||x.status==='rejected').sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+  const s2=document.createElement('div'); s2.className='glass card';
+  s2.appendChild(el(`<h2 class="sec">📋 진행 중 <span class="r">${prog.length}건</span></h2>`));
+  if(!prog.length) s2.appendChild(el(`<div class="empty">진행 중인 미션이 없어요.</div>`));
+  else prog.forEach(x=>s2.appendChild(missionCard(x,'parent')));
+  v.appendChild(s2);
+  // 완료
+  const done=state.missions.filter(x=>x.status==='approved').sort((a,b)=>(b.approvedAt||'').localeCompare(a.approvedAt||''));
+  if(done.length){
+    const s3=document.createElement('div'); s3.className='glass card';
+    s3.appendChild(el(`<h2 class="sec">✅ 완료 <span class="r">최근 ${Math.min(done.length,20)}건</span></h2>`));
+    done.slice(0,20).forEach(x=>s3.appendChild(missionCard(x,'parent')));
+    v.appendChild(s3);
+  }
+}
+function renderMissionChild(v, me){
+  const mine=state.missions.filter(x=>x.assigneeId===me.id);
+  const todo=mine.filter(x=>x.status==='assigned'||x.status==='rejected').sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
+  const wait=mine.filter(x=>x.status==='submitted');
+  const done=mine.filter(x=>x.status==='approved').sort((a,b)=>(b.approvedAt||'').localeCompare(a.approvedAt||''));
+  const s1=document.createElement('div');s1.className='glass card';
+  s1.appendChild(el(`<h2 class="sec">🎯 해야 할 미션 <span class="r">${todo.length}건</span></h2>`));
+  if(!todo.length) s1.appendChild(el(`<div class="empty">지금 해야 할 미션이 없어요. 잘하고 있어요! 👍</div>`));
+  else todo.forEach(x=>s1.appendChild(missionCard(x,'child')));
+  v.appendChild(s1);
+  if(wait.length){
+    const s2=document.createElement('div');s2.className='glass card';
+    s2.appendChild(el(`<h2 class="sec">⏳ 승인 기다리는 중 <span class="r">${wait.length}건</span></h2>`));
+    wait.forEach(x=>s2.appendChild(missionCard(x,'child')));
+    v.appendChild(s2);
+  }
+  if(done.length){
+    const s3=document.createElement('div');s3.className='glass card';
+    s3.appendChild(el(`<h2 class="sec">✅ 완료한 미션 <span class="r">${done.length}건</span></h2>`));
+    done.slice(0,20).forEach(x=>s3.appendChild(missionCard(x,'child')));
+    v.appendChild(s3);
+  }
+}
+function missionCard(x, viewer){
+  const kid=member(x.assigneeId); const c=colorOf(x.assigneeId);
+  const overdue=(x.status==='assigned'||x.status==='rejected') && x.dueDate && x.dueDate<todayStr();
+  const stLabel={assigned:'부여됨',submitted:'완료 요청',approved:'완료',rejected:'반려됨'}[x.status]||'';
+  const card=document.createElement('div'); card.className='mi'+(overdue?' overdue':'');
+  card.innerHTML=`
+    <div class="mi-top">
+      <span class="uav" style="width:24px;height:24px;border-radius:8px;background:${c}">${initial(kid?kid.name:'?')}</span>
+      <span class="mi-title">${x.title}</span>
+      <span class="st ${x.status}">${stLabel}</span>
+    </div>
+    <div class="mi-crit">✔ ${x.criteria}</div>
+    <div class="mi-meta"><span>대상 ${kid?kid.name:'?'}</span><span class="${overdue?'od':''}">마감 ${fmtDate(x.dueDate)}${overdue?' · 지남':''}</span></div>`;
+  const act=document.createElement('div'); act.className='mi-act';
+  if(viewer==='child'){
+    if(x.status==='assigned'||x.status==='rejected'){
+      const b=el(`<button class="btn btn-sm btn-blue">완료했어요 ✋</button>`);
+      b.onclick=()=>{x.status='submitted';x.submittedAt=todayStr();save();render();toast('완료 요청을 보냈어요!');};
+      act.appendChild(b);
+    }
+  } else {
+    if(x.status==='submitted'){
+      const ok=el(`<button class="btn btn-sm btn-blue">승인</button>`);
+      ok.onclick=()=>{x.status='approved';x.approvedAt=todayStr();save();render();toast('승인했어요 👏');};
+      const no=el(`<button class="btn btn-sm btn-soft">반려</button>`);
+      no.onclick=()=>{x.status='rejected';x.submittedAt=null;save();render();toast('반려했어요 (아이가 다시 수행)');};
+      act.appendChild(ok);act.appendChild(no);
+    }
+    if(x.status==='assigned'||x.status==='rejected'){
+      const del=el(`<button class="del">삭제</button>`);
+      del.onclick=()=>{if(confirm('이 미션을 삭제할까요?')){state.missions=state.missions.filter(y=>y.id!==x.id);save();render();}};
+      act.appendChild(del);
+    }
+  }
+  if(act.children.length) card.appendChild(act);
+  return card;
 }
 
 function renderRunning(){
