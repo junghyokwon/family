@@ -157,6 +157,21 @@
   .reclist{max-height:min(600px,62vh);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
   .reclist::-webkit-scrollbar{width:6px}
   .reclist::-webkit-scrollbar-thumb{background:rgba(120,130,150,.3);border-radius:999px}
+  .rmonth{position:sticky;top:0;background:rgba(244,246,251,.94);backdrop-filter:blur(4px);
+    font-size:11px;font-weight:800;color:var(--muted);padding:7px 4px 5px;z-index:2;letter-spacing:.2px}
+  .pstats{display:flex;gap:7px;margin:2px 2px 12px}
+  .pstat{flex:1;background:var(--glass-strong);border:1px solid var(--line);border-radius:13px;padding:9px 5px;
+    text-align:center;font-size:10.5px;color:var(--muted);font-weight:600}
+  .pstat b{display:block;font-size:14px;color:var(--ink);margin-top:3px;font-weight:800}
+  .chip.badge{background:#fff0d0;color:#c47a12;font-size:10px}
+  /* 맨 위로 버튼 (반투명 화이트) */
+  .gotop{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(12px);
+    width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.5);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 6px 20px rgba(80,100,140,.25);display:flex;align-items:center;justify-content:center;
+    font-size:22px;color:#1b1f2a;cursor:pointer;opacity:0;pointer-events:none;transition:.28s;z-index:56;font-weight:700}
+  .gotop.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto}
+  .gotop:active{transform:translateX(-50%) scale(.92)}
   .muted{color:var(--muted);font-size:12.5px}
   .empty{text-align:center;color:var(--muted);padding:24px 10px;font-size:13px}
   .foot{display:flex;gap:8px;flex-wrap:wrap}
@@ -178,6 +193,7 @@
 </div>
 
 <div class="toast" id="toast"></div>
+<button class="gotop" id="gotop" aria-label="맨 위로">↑</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -378,25 +394,53 @@ function renderRunning(){
   const fkm=filtered.reduce((s,r)=>s+r.distance,0);
   const fname=recentFilter==='all'?'전체':((member(recentFilter)||{}).name||'전체');
   list.appendChild(el(`<div class="rsum">${fname} <b>${filtered.length}회</b> · <b>${fmtKm(fkm)}km</b></div>`));
-  // 스크롤 목록 (전부 표시, 높이는 약 10건 크기로 고정)
+  // 개인 선택 시 상세 요약 (최장·평균·이번 달·최長 연속)
+  if(recentFilter!=='all' && filtered.length){
+    const longest=filtered.reduce((mx,r)=>Math.max(mx,r.distance),0);
+    const avg=fkm/filtered.length;
+    const now=new Date(),yr=now.getFullYear(),mo=now.getMonth()+1;
+    const inYM=(rr,Y,M)=>{const[y2,m2]=rr.date.split('-').map(Number);return y2===Y&&m2===M;};
+    const thisMo=filtered.filter(r=>inYM(r,yr,mo)).reduce((s,r)=>s+r.distance,0);
+    const lY=mo===1?yr-1:yr,lM=mo===1?12:mo-1;
+    const lastMo=filtered.filter(r=>inYM(r,lY,lM)).reduce((s,r)=>s+r.distance,0);
+    const dys=[...new Set(filtered.map(r=>r.date))].sort();
+    let best=0,cur=0,prev=null;
+    dys.forEach(d=>{const diff=prev?Math.round((new Date(d)-new Date(prev))/86400000):null;cur=diff===1?cur+1:1;best=Math.max(best,cur);prev=d;});
+    const arrow=thisMo>lastMo?' <span style="color:var(--green)">▲</span>':(thisMo<lastMo?' <span style="color:var(--red)">▼</span>':'');
+    const ps=document.createElement('div');ps.className='pstats';
+    ps.innerHTML=`
+      <div class="pstat">최장<b>${fmtKm(longest)}km</b></div>
+      <div class="pstat">평균<b>${fmtKm(avg)}km</b></div>
+      <div class="pstat">이번 달<b>${fmtKm(thisMo)}km${arrow}</b></div>
+      <div class="pstat">최長 연속<b>${best}일</b></div>`;
+    list.appendChild(ps);
+  }
+  // 스크롤 목록 (전부 표시 · 높이 고정 · 월별 구분 · 특별 배지)
   const scroll=document.createElement('div');scroll.className='reclist';
   if(!filtered.length){ scroll.appendChild(el(`<div class="empty">기록이 없어요. 위에서 러닝을 추가해 보세요!</div>`)); }
-  else filtered.forEach(r=>{
-    const m=member(r.memberId);const c=colorOf(r.memberId);
-    const item=document.createElement('div');item.className='item';
-    item.innerHTML=`
-      <span class="dot" style="background:${c}">${m?initial(m.name):'?'}</span>
-      <div class="meta">
-        <div class="t">${m?m.name:'(삭제됨)'} ${r.distance>=unitOf(r.memberId)?`<span class="chip g" style="font-size:10px">${unitOf(r.memberId)}km+</span>`:''}</div>
-        <div class="s">${fmtDate(r.date)}${r.memo?' · '+r.memo:''}</div>
-      </div>
-      <span class="amt">+${fmtKm(r.distance)}km</span>
-      <button class="del edit">수정</button>
-      <button class="del">삭제</button>`;
-    item.querySelector('.edit').onclick=()=>{editId=r.id;render();};
-    item.querySelector('.del:not(.edit)').onclick=()=>{if(confirm('이 기록을 삭제할까요?')){state.runs=state.runs.filter(x=>x.id!==r.id);save();render();toast('삭제했어요');}};
-    scroll.appendChild(item);
-  });
+  else{
+    let curM='';
+    filtered.forEach(r=>{
+      const ym=r.date.slice(0,7);
+      if(ym!==curM){ curM=ym; const[yy,mm2]=ym.split('-'); scroll.appendChild(el(`<div class="rmonth">${Number(yy)}년 ${Number(mm2)}월</div>`)); }
+      const m=member(r.memberId);const c=colorOf(r.memberId);
+      const kmchip=r.distance>=unitOf(r.memberId)?`<span class="chip g" style="font-size:10px">${unitOf(r.memberId)}km+</span>`:'';
+      const badge=r.distance>=21?'<span class="chip badge">🏅 하프</span>':(r.distance>=10?'<span class="chip badge">🔟</span>':'');
+      const item=document.createElement('div');item.className='item';
+      item.innerHTML=`
+        <span class="dot" style="background:${c}">${m?initial(m.name):'?'}</span>
+        <div class="meta">
+          <div class="t">${m?m.name:'(삭제됨)'} ${kmchip}${badge}</div>
+          <div class="s">${fmtDate(r.date)}${r.memo?' · '+r.memo:''}</div>
+        </div>
+        <span class="amt">+${fmtKm(r.distance)}km</span>
+        <button class="del edit">수정</button>
+        <button class="del">삭제</button>`;
+      item.querySelector('.edit').onclick=()=>{editId=r.id;render();};
+      item.querySelector('.del:not(.edit)').onclick=()=>{if(confirm('이 기록을 삭제할까요?')){state.runs=state.runs.filter(x=>x.id!==r.id);save();render();toast('삭제했어요');}};
+      scroll.appendChild(item);
+    });
+  }
   list.appendChild(scroll);
   v.appendChild(list);
 }
@@ -411,8 +455,9 @@ function renderCalendar(v){
   const pad2=n=>String(n).padStart(2,'0');
   const startDow=new Date(y,m-1,1).getDay();   // 0=일
   const days=new Date(y,m,0).getDate();
+  const calSrc = recentFilter==='all' ? state.runs : state.runs.filter(r=>r.memberId===recentFilter); // 선택 인원 연동
   const byDate={};
-  state.runs.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r);});
+  calSrc.forEach(r=>{(byDate[r.date]=byDate[r.date]||[]).push(r);});
   const ranDays=Object.keys(byDate).filter(k=>k.startsWith(`${y}-${pad2(m)}`)).length;
   const tStr=todayStr();
 
@@ -432,7 +477,7 @@ function renderCalendar(v){
 
   const card=document.createElement('div');card.className='glass card';
   card.innerHTML=`
-    <h2 class="sec">📆 러닝 달력</h2>
+    <h2 class="sec">📆 러닝 달력 ${recentFilter!=='all'?`<span class="r" style="color:${colorOf(recentFilter)};font-weight:700">${(member(recentFilter)||{}).name||''}</span>`:''}</h2>
     <div class="cal-head">
       <button class="cal-nav" id="cal_prev">‹</button>
       <div class="cal-title">${y}년 ${m}월 <span class="muted" style="font-weight:400">· ${ranDays}일 달림</span></div>
@@ -452,8 +497,9 @@ function renderCalendar(v){
     byDate[calSel].forEach(r=>{
       const mm=member(r.memberId);
       const item=document.createElement('div');item.className='item';
+      const badge=r.distance>=21?'<span class="chip badge">🏅 하프</span>':(r.distance>=10?'<span class="chip badge">🔟</span>':'');
       item.innerHTML=`<span class="dot" style="background:${colorOf(r.memberId)}">${mm?initial(mm.name):'?'}</span>
-        <div class="meta"><div class="t">${mm?mm.name:'(삭제됨)'} ${r.distance>=unitOf(r.memberId)?`<span class="chip g" style="font-size:10px">${unitOf(r.memberId)}km+</span>`:''}</div>
+        <div class="meta"><div class="t">${mm?mm.name:'(삭제됨)'} ${r.distance>=unitOf(r.memberId)?`<span class="chip g" style="font-size:10px">${unitOf(r.memberId)}km+</span>`:''}${badge}</div>
         <div class="s">${r.memo||'&nbsp;'}</div></div>
         <span class="amt">+${fmtKm(r.distance)}km</span>
         <button class="del edit">수정</button><button class="del">삭제</button>`;
@@ -569,6 +615,13 @@ function renderGeneric(act){
     list.appendChild(item);
   });
   v.appendChild(list);
+}
+
+// 맨 위로 버튼: 스크롤 내리면 나타나고, 누르면 부드럽게 맨 위로
+const _gotop=document.getElementById('gotop');
+if(_gotop){
+  window.addEventListener('scroll',()=>{_gotop.classList.toggle('show',window.scrollY>380);},{passive:true});
+  _gotop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 }
 
 init();
