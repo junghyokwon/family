@@ -166,9 +166,12 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-/* ===== 데이터 (이 브라우저에 자동 저장 · 백업 파일로 이동 가능) ===== */
-const KEY='familyActivity_v1';
+/* ===== 데이터 (Supabase 온라인 저장소 · 가족 6명 실시간 공유) ===== */
+const SB_URL='https://idirufpmoctheoxttujg.supabase.co';
+const SB_KEY='sb_publishable_oFCebfYGRI13G3eDxpHRqw_Cc9MWg9l';
+const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 const CHILD_UNIT=5, RUNS_PER_PAY=3, PAY_AMOUNT=10000;
 
 function seed(){
@@ -182,9 +185,47 @@ function seed(){
     runs:[], generic:{}, payouts:{},
   };
 }
-let state=load();
-function load(){ try{const s=JSON.parse(localStorage.getItem(KEY)); if(s&&s.members) return s;}catch(e){} return seed(); }
-function save(){ localStorage.setItem(KEY,JSON.stringify(state)); }
+let state=seed();               // 로딩 전 임시 값 (init에서 실제 공유 데이터로 교체)
+let _saving=false, _pending=false, _lastJSON='', _pendingRender=false;
+
+async function pushState(){     // 현재 상태를 서버에 저장
+  if(!sb) return;
+  const json=JSON.stringify(state); _lastJSON=json;
+  const {error}=await sb.from('app_state').update({data:state,updated_at:new Date().toISOString()}).eq('id',1);
+  if(error) console.warn('저장 오류',error);
+}
+function save(){                // 로컬은 이미 갱신됨 → 백그라운드로 서버 반영(연속 저장은 합쳐 처리)
+  if(_saving){ _pending=true; return; }
+  _saving=true;
+  pushState().finally(()=>{ _saving=false; if(_pending){ _pending=false; save(); } });
+}
+function applyServer(data){     // 서버(다른 가족)의 변경을 내 화면에 반영
+  if(!data||!data.members) return;
+  const json=JSON.stringify(data);
+  if(json===JSON.stringify(state)) return;   // 변화 없음
+  state=data;
+  if(json===_lastJSON) return;               // 내가 방금 저장한 것의 메아리 → 조용히 동기화
+  const ae=document.activeElement;
+  if(ae&&/^(INPUT|SELECT|TEXTAREA)$/.test(ae.tagName)){ _pendingRender=true; return; } // 입력 중이면 방해 안 함
+  render();
+}
+async function init(){
+  render();                     // 임시(빈) 화면 즉시 표시
+  if(!sb){ toast('온라인 저장소 연결에 실패했어요 (네트워크 확인)'); return; }
+  try{
+    const {data}=await sb.from('app_state').select('data').eq('id',1).single();
+    if(data&&data.data&&data.data.members) state=data.data;
+    else { state=seed(); await pushState(); }   // 최초 1회 초기 데이터 심기
+  }catch(e){ console.warn('불러오기 오류',e); toast('데이터 서버 연결을 확인해 주세요'); }
+  render();
+  sb.channel('app_state_rt')    // 실시간: 누가 바꾸면 즉시 반영
+    .on('postgres_changes',{event:'*',schema:'public',table:'app_state',filter:'id=eq.1'},p=>applyServer(p.new&&p.new.data))
+    .subscribe();
+  setInterval(async()=>{        // 보조: 12초마다 최신 상태 확인(실시간이 끊겨도 동기화 보장)
+    try{ const {data}=await sb.from('app_state').select('data').eq('id',1).single(); if(data) applyServer(data.data);}catch(e){}
+  },12000);
+  document.addEventListener('focusout',()=>{ if(_pendingRender){_pendingRender=false; setTimeout(render,120);} });
+}
 
 const COLORS=['#3b6fe0','#12a06a','#f2a53c','#db2777','#0891b2','#7c3aed'];
 function colorOf(id){const i=state.members.findIndex(m=>m.id===id);return COLORS[(i<0?0:i)%COLORS.length];}
@@ -493,7 +534,7 @@ function renderGeneric(act){
   v.appendChild(list);
 }
 
-render();
+init();
 </script>
 </body>
 </html>
