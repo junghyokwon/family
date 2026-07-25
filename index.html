@@ -49,7 +49,7 @@
 
   /* 헤더 */
   .top{padding:22px 6px 12px;display:flex;align-items:center;justify-content:space-between}
-  .top .title{font-size:clamp(15px,4.6vw,22px);font-weight:800;letter-spacing:-.5px;line-height:1.25;flex:1;padding-right:12px}
+  .top .title{font-size:clamp(12.5px,3.6vw,22px);font-weight:800;letter-spacing:-.5px;line-height:1.25;flex:1;padding-right:10px;word-break:keep-all}
   .top .logo{width:38px;height:38px;border-radius:12px;background:#1b1f2a;color:#fff;
     display:flex;align-items:center;justify-content:center;font-size:18px;flex:0 0 auto}
 
@@ -401,9 +401,11 @@ function renderHeaderUser(){
   const box=document.getElementById('userchip'); if(!box) return;
   const me=curUser(); if(!me){box.innerHTML='';return;}
   box.innerHTML='';
-  const b=document.createElement('button');b.className='uchip';
-  b.innerHTML=`<span class="uav" style="background:${colorOf(me.id)}">${initial(me.name)}</span>${me.name} ⌄`;
-  b.onclick=()=>{ if(confirm('로그아웃하고 다른 사람으로 전환할까요?')) logout(); };
+  const b=document.createElement('button');
+  b.style.cssText='background:none;border:none;padding:0;cursor:pointer;flex:0 0 auto';
+  b.title=me.name;
+  b.innerHTML=`<span class="uav" style="width:34px;height:34px;font-size:14px;background:${colorOf(me.id)}">${initial(me.name)}</span>`;
+  b.onclick=()=>{ if(confirm(`${me.name}님, 로그아웃하고 다른 사람으로 전환할까요?`)) logout(); };
   box.appendChild(b);
 }
 function logout(){ session=null; try{localStorage.removeItem('familySession');}catch(e){} loginSel=null;loginPin=''; current='running'; render(); }
