@@ -1,0 +1,17 @@
+{
+  "name": "겸율휘연, 행복한 우리가족 액티비티",
+  "short_name": "겸율휘연",
+  "description": "우리 가족 러닝 기록과 아이 용돈을 실시간으로 함께 관리해요",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#cdd9ec",
+  "theme_color": "#cdd9ec",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

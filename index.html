@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#cdd9ec">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="겸율휘연">
 <title>겸율휘연, 행복한 우리가족 액티비티</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -623,6 +629,9 @@ if(_gotop){
   window.addEventListener('scroll',()=>{_gotop.classList.toggle('show',window.scrollY>380);},{passive:true});
   _gotop.onclick=()=>window.scrollTo({top:0,behavior:'smooth'});
 }
+
+// 앱 설치(PWA)용 서비스워커 등록
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
 
 init();
 </script>
