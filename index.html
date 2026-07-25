@@ -264,6 +264,9 @@ const SB_URL='https://idirufpmoctheoxttujg.supabase.co';
 const SB_KEY='sb_publishable_oFCebfYGRI13G3eDxpHRqw_Cc9MWg9l';
 const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
 const CHILD_UNIT=5, RUNS_PER_PAY=3, PAY_AMOUNT=10000;
+/* 푸시 알림 */
+const VAPID_PUBLIC='BB6SJYWXtOnC59QXlGGFi2JxIPkWvpizAVvNMXjSJyfWwqLb1qDmV_xZoSZAX0S2OFHwShNcr6zbz1l-h43mq2I';
+const PUSH_FN='https://idirufpmoctheoxttujg.supabase.co/functions/v1/send-push';
 
 function seed(){
   return {
@@ -320,6 +323,7 @@ async function init(){
     if(normalize()) await pushState();           // 미션·PIN 항목 보강
   }catch(e){ console.warn('불러오기 오류',e); toast('데이터 서버 연결을 확인해 주세요'); }
   render();
+  ensurePushFresh();
   sb.channel('app_state_rt')    // 실시간: 누가 바꾸면 즉시 반영
     .on('postgres_changes',{event:'*',schema:'public',table:'app_state',filter:'id=eq.1'},p=>applyServer(p.new&&p.new.data))
     .subscribe();
@@ -340,6 +344,44 @@ function fmtKm(v){return (Math.round(v*10)/10).toLocaleString();}
 function fmtWon(v){return v.toLocaleString()+'원';}
 function initial(n){return n.length>=3?n.slice(-1):n.slice(0,1);} // 정재겸→겸, 아빠→아
 function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1900);}
+
+/* ===== 푸시 알림 ===== */
+function pushSupported(){ return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window); }
+function pushGranted(){ return pushSupported() && Notification.permission==='granted'; }
+function urlB64ToUint8(base64){
+  const pad='='.repeat((4-base64.length%4)%4);
+  const b=(base64+pad).replace(/-/g,'+').replace(/_/g,'/');
+  const raw=atob(b); const arr=new Uint8Array(raw.length);
+  for(let i=0;i<raw.length;i++) arr[i]=raw.charCodeAt(i);
+  return arr;
+}
+async function enablePush(){
+  if(!pushSupported()){ toast('이 기기는 알림을 지원하지 않아요'); return; }
+  try{
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){ toast('알림 권한을 허용해 주세요'); render(); return; }
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:urlB64ToUint8(VAPID_PUBLIC)});
+    if(sb) await sb.from('push_subscriptions').upsert({member_id:session, endpoint:sub.endpoint, subscription:sub.toJSON()},{onConflict:'endpoint'});
+    toast('알림을 켰어요! 🔔'); render();
+  }catch(e){ console.warn('push enable err',e); toast('알림 켜기에 실패했어요'); }
+}
+async function ensurePushFresh(){ // 이미 허용돼 있으면 구독 정보를 최신으로 유지
+  if(!pushGranted()||!sb||!session) return;
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub) sub=await reg.pushManager.subscribe({userVisibleOnly:true, applicationServerKey:urlB64ToUint8(VAPID_PUBLIC)});
+    await sb.from('push_subscriptions').upsert({member_id:session, endpoint:sub.endpoint, subscription:sub.toJSON()},{onConflict:'endpoint'});
+  }catch(e){}
+}
+function notifyPush(memberIds, title, body, url){ // 발송 요청(실패는 조용히)
+  try{
+    fetch(PUSH_FN, { method:'POST', headers:{'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY},
+      body: JSON.stringify({memberIds, title, body, url: url||'/'}) }).catch(()=>{});
+  }catch(e){}
+}
 
 let current='running';
 let calYM=null, calSel=null;  // 달력 표시 월 / 선택 날짜
@@ -451,7 +493,7 @@ function renderLogin(){
 function tryLogin(id,pin){
   if((state.pins[id]||'')===pin){
     session=id; try{localStorage.setItem('familySession',id);}catch(e){}
-    loginSel=null;loginPin=''; current='running'; render(); toast(`${member(id).name}님 환영해요!`);
+    loginSel=null;loginPin=''; current='running'; render(); toast(`${member(id).name}님 환영해요!`); ensurePushFresh();
   } else {
     loginPin=''; render();
     const w=document.querySelector('.pinbox'); if(w){w.classList.add('shake');setTimeout(()=>w.classList.remove('shake'),320);}
@@ -463,6 +505,18 @@ function tryLogin(id,pin){
 function renderMission(){
   const v=document.getElementById('view'); v.innerHTML='';
   const me=curUser(); const kids=state.members.filter(m=>m.child);
+  // 알림 켜기 안내 카드 (아직 허용 안 했을 때만)
+  if(pushSupported() && Notification.permission!=='granted'){
+    const pc=document.createElement('div'); pc.className='glass card';
+    pc.style.cssText='background:rgba(255,240,208,.7);border-color:#ffe2b8';
+    pc.innerHTML=`<div style="display:flex;align-items:center;gap:10px">
+      <div style="font-size:26px">🔔</div>
+      <div style="flex:1"><div style="font-weight:800;font-size:14px">미션 알림 받기</div>
+      <div class="muted" style="margin-top:2px">새 미션·승인 소식을 폰 알림으로 받아요</div></div></div>
+      <button class="btn btn-sm btn-blue" style="margin-top:10px;width:100%">알림 켜기</button>`;
+    pc.querySelector('button').onclick=enablePush;
+    v.appendChild(pc);
+  }
   // 대시보드
   const now=new Date(), tS=todayStr();
   const inRange=ds=>{
@@ -528,8 +582,10 @@ function renderMissionParent(v, me, kids){
     if(!title){toast('미션 내용을 입력해 주세요');return;}
     if(!crit){toast('완료 기준을 입력해 주세요');return;}
     if(!due){toast('마감일을 정해 주세요');return;}
-    mDraft.ids.forEach(kid=>state.missions.push({id:uid(),title,criteria:crit,assigneeId:kid,assignerId:me.id,dueDate:due,createdAt:todayStr(),status:'assigned',submittedAt:null,approvedAt:null}));
-    const n=mDraft.ids.length; mDraft=null; save(); render(); toast(`미션을 ${n}명에게 부여했어요`);
+    const ids=[...mDraft.ids];
+    ids.forEach(kid=>state.missions.push({id:uid(),title,criteria:crit,assigneeId:kid,assignerId:me.id,dueDate:due,createdAt:todayStr(),status:'assigned',submittedAt:null,approvedAt:null}));
+    notifyPush(ids, '새 미션이 도착했어요! 🎯', title, '/');
+    mDraft=null; save(); render(); toast(`미션을 ${ids.length}명에게 부여했어요`);
   };
   // 승인 대기
   const pend=state.missions.filter(x=>x.status==='submitted').sort((a,b)=>(a.dueDate||'').localeCompare(b.dueDate||''));
@@ -594,15 +650,18 @@ function missionCard(x, viewer){
   if(viewer==='child'){
     if(x.status==='assigned'||x.status==='rejected'){
       const b=el(`<button class="btn btn-sm btn-blue">완료했어요 ✋</button>`);
-      b.onclick=()=>{x.status='submitted';x.submittedAt=todayStr();save();render();toast('완료 요청을 보냈어요!');};
+      b.onclick=()=>{x.status='submitted';x.submittedAt=todayStr();save();render();
+        const parents=state.members.filter(m=>!m.child).map(m=>m.id);
+        notifyPush(parents,'미션 완료 요청 ⏳',`${(member(x.assigneeId)||{}).name||'아이'}: ${x.title}`,'/');
+        toast('완료 요청을 보냈어요!');};
       act.appendChild(b);
     }
   } else {
     if(x.status==='submitted'){
       const ok=el(`<button class="btn btn-sm btn-blue">승인</button>`);
-      ok.onclick=()=>{x.status='approved';x.approvedAt=todayStr();save();render();toast('승인했어요 👏');};
+      ok.onclick=()=>{x.status='approved';x.approvedAt=todayStr();save();render();notifyPush([x.assigneeId],'미션 완료 승인! 👏',`${x.title} 완료했어요!`,'/');toast('승인했어요 👏');};
       const no=el(`<button class="btn btn-sm btn-soft">반려</button>`);
-      no.onclick=()=>{x.status='rejected';x.submittedAt=null;save();render();toast('반려했어요 (아이가 다시 수행)');};
+      no.onclick=()=>{x.status='rejected';x.submittedAt=null;save();render();notifyPush([x.assigneeId],'미션 다시 도전 🙏',`${x.title} 다시 해볼까요?`,'/');toast('반려했어요 (아이가 다시 수행)');};
       act.appendChild(ok);act.appendChild(no);
     }
     if(x.status==='assigned'||x.status==='rejected'){
