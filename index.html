@@ -177,9 +177,9 @@ const CHILD_UNIT=5, RUNS_PER_PAY=3, PAY_AMOUNT=10000;
 function seed(){
   return {
     members:[
-      {id:'m1',name:'아빠',child:false},{id:'m2',name:'엄마',child:false},
-      {id:'m3',name:'정재겸',child:true},{id:'m4',name:'정재율',child:true},
-      {id:'m5',name:'정재휘',child:true},{id:'m6',name:'정재연',child:true},
+      {id:'m1',name:'아빠',child:false,unit:5},{id:'m2',name:'엄마',child:false,unit:5},
+      {id:'m3',name:'정재겸',child:true,unit:5},{id:'m4',name:'정재율',child:true,unit:5},
+      {id:'m5',name:'정재휘',child:true,unit:5},{id:'m6',name:'정재연',child:true,unit:3},
     ],
     activities:[{id:'running',name:'러닝',type:'running'}],
     runs:[], generic:{}, payouts:{},
@@ -230,6 +230,7 @@ async function init(){
 const COLORS=['#3b6fe0','#12a06a','#f2a53c','#db2777','#0891b2','#7c3aed'];
 function colorOf(id){const i=state.members.findIndex(m=>m.id===id);return COLORS[(i<0?0:i)%COLORS.length];}
 function member(id){return state.members.find(m=>m.id===id);}
+function unitOf(id){const m=member(id);return (m&&m.unit)?m.unit:CHILD_UNIT;} // 아이별 용돈 인정 최소 거리(재연 3km)
 function uid(){return Math.random().toString(36).slice(2,9);}
 function todayStr(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
 function fmtDate(s){const[y,m,d]=s.split('-');return `${Number(m)}월 ${Number(d)}일`;}
@@ -352,7 +353,7 @@ function renderRunning(){
     item.innerHTML=`
       <span class="dot" style="background:${c}">${m?initial(m.name):'?'}</span>
       <div class="meta">
-        <div class="t">${m?m.name:'(삭제됨)'} ${r.distance>=CHILD_UNIT?'<span class="chip g" style="font-size:10px">5km+</span>':''}</div>
+        <div class="t">${m?m.name:'(삭제됨)'} ${r.distance>=unitOf(r.memberId)?`<span class="chip g" style="font-size:10px">${unitOf(r.memberId)}km+</span>`:''}</div>
         <div class="s">${fmtDate(r.date)}${r.memo?' · '+r.memo:''}</div>
       </div>
       <span class="amt">+${fmtKm(r.distance)}km</span>
@@ -417,7 +418,7 @@ function renderCalendar(v){
       const mm=member(r.memberId);
       const item=document.createElement('div');item.className='item';
       item.innerHTML=`<span class="dot" style="background:${colorOf(r.memberId)}">${mm?initial(mm.name):'?'}</span>
-        <div class="meta"><div class="t">${mm?mm.name:'(삭제됨)'} ${r.distance>=CHILD_UNIT?'<span class="chip g" style="font-size:10px">5km+</span>':''}</div>
+        <div class="meta"><div class="t">${mm?mm.name:'(삭제됨)'} ${r.distance>=unitOf(r.memberId)?`<span class="chip g" style="font-size:10px">${unitOf(r.memberId)}km+</span>`:''}</div>
         <div class="s">${r.memo||'&nbsp;'}</div></div>
         <span class="amt">+${fmtKm(r.distance)}km</span>
         <button class="del edit">수정</button><button class="del">삭제</button>`;
@@ -432,10 +433,11 @@ function renderCalendar(v){
 function renderAllowance(v){
   const kids=state.members.filter(m=>m.child);
   const card=document.createElement('div');card.className='glass card';
-  card.innerHTML=`<h2 class="sec">💰 아이 용돈 <span class="r">5km+ ${RUNS_PER_PAY}회당 ${fmtWon(PAY_AMOUNT)}</span></h2>`;
+  card.innerHTML=`<h2 class="sec">💰 아이 용돈 <span class="r">${RUNS_PER_PAY}회 달성마다 ${fmtWon(PAY_AMOUNT)}</span></h2>`;
   let totalOut=0;
   kids.forEach(m=>{
-    const qual=state.runs.filter(r=>r.memberId===m.id&&r.distance>=CHILD_UNIT).length;
+    const unit=unitOf(m.id);
+    const qual=state.runs.filter(r=>r.memberId===m.id&&r.distance>=unit).length;
     const earned=Math.floor(qual/RUNS_PER_PAY)*PAY_AMOUNT;
     const paid=(state.payouts[m.id]||0)*PAY_AMOUNT;
     const out=earned-paid; totalOut+=out;
@@ -450,7 +452,7 @@ function renderAllowance(v){
       <div class="muted">다음 ${fmtWon(PAY_AMOUNT)}까지 <b style="color:${c}">${toward}/${RUNS_PER_PAY}회</b></div>
       <div class="prog"><i style="width:${(toward/RUNS_PER_PAY)*100}%;background:${c}"></i></div>
       <div class="astats">
-        <span>5km+ 러닝 <b>${qual}회</b></span>
+        <span>${unit}km+ 러닝 <b>${qual}회</b></span>
         <span>적립 <b>${fmtWon(earned)}</b></span>
         <span>지급 <b>${fmtWon(paid)}</b></span>
         <span>미지급 <b style="color:${out>0?'var(--amber-tx)':'inherit'}">${fmtWon(out)}</b></span>
