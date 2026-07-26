@@ -413,6 +413,7 @@ let current='mission';
 let calYM=null, calSel=null;  // 달력 표시 월 / 선택 날짜
 let editId=null;              // 수정 중인 기록 id
 let recentFilter='all';       // 러닝 기록 사람 필터 (전체/구성원id)
+let missionDoneFilter='all';  // 완료 미션 사람 필터 (전체/구성원id)
 let session=(function(){try{return localStorage.getItem('familySession')||null;}catch(e){return null;}})(); // 로그인한 사람(폰별 유지)
 let loginSel=null, loginPin=''; // 로그인 화면 상태
 let dashRange='week';         // 대시보드 기간: week|month|all
@@ -634,7 +635,10 @@ function renderMissionAllowance(v, kids){
     box.innerHTML=`
       <div class="allow-top">
         <div class="allow-name"><span class="init" style="width:30px;height:30px;border-radius:10px;font-size:13px;background:${c}">${initial(m.name)}</span>${m.name}</div>
-        <div>${ready?`<span class="chip a">지급 가능</span>`:`<span class="chip" style="background:rgba(120,130,150,.15);color:var(--muted)">진행 중</span>`}</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          ${cnt>0?`<button class="btn btn-sm btn-soft" data-undo>지급취소</button>`:''}
+          ${ready?`<button class="btn btn-sm btn-blue" data-pay>용돈 지급</button>`:`<span class="chip" style="background:rgba(120,130,150,.15);color:var(--muted)">진행 중</span>`}
+        </div>
       </div>
       <div class="muted">목표까지 <b style="color:${c}">${pts}/${PT_GOAL}P</b>${ready?` · <b style="color:var(--amber-tx)">지급 대기!</b>`:''}</div>
       <div class="prog"><i style="width:${Math.min(100,pts/PT_GOAL*100)}%;background:${c}"></i></div>
@@ -642,10 +646,6 @@ function renderMissionAllowance(v, kids){
         <span>현재 <b>${pts}P</b></span>
         <span>지급 <b>${cnt}회</b></span>
         <span>받은 용돈 <b>${fmtWon(paid)}</b></span>
-      </div>
-      <div class="aact">
-        <button class="btn btn-sm btn-blue" data-pay ${ready?'':'disabled style="opacity:.45"'}>용돈 지급</button>
-        ${cnt>0?`<button class="btn btn-sm btn-soft" data-undo>지급 취소</button>`:''}
       </div>`;
     const pay=box.querySelector('[data-pay]');
     if(pay&&ready) pay.onclick=()=>{
@@ -731,12 +731,29 @@ function renderMissionParent(v, me, kids){
   if(!prog.length) s2.appendChild(el(`<div class="empty">진행 중인 미션이 없어요.</div>`));
   else prog.forEach(x=>s2.appendChild(missionCard(x,'parent')));
   v.appendChild(s2);
-  // 완료
-  const done=state.missions.filter(x=>x.status==='approved').sort((a,b)=>(b.approvedAt||'').localeCompare(a.approvedAt||''));
-  if(done.length){
+  // 완료 (아이별 필터 + 고정 높이 스크롤)
+  const doneAll=state.missions.filter(x=>x.status==='approved');
+  if(doneAll.length){
     const s3=document.createElement('div'); s3.className='glass card';
-    s3.appendChild(el(`<h2 class="sec">✅ 완료 <span class="r">최근 ${Math.min(done.length,20)}건</span></h2>`));
-    done.slice(0,20).forEach(x=>s3.appendChild(missionCard(x,'parent')));
+    s3.appendChild(el(`<h2 class="sec">✅ 완료한 미션 <span class="r">${doneAll.length}건</span></h2>`));
+    const fbar=document.createElement('div'); fbar.className='rfilter';
+    const chips=[{id:'all',label:'전체',cnt:doneAll.length,color:'#1b1f2a'}]
+      .concat(kids.map(k=>({id:k.id,label:initial(k.name),cnt:doneAll.filter(x=>x.assigneeId===k.id).length,color:colorOf(k.id)})));
+    chips.forEach(ch=>{
+      const b=document.createElement('button');
+      b.className='rchip'+(missionDoneFilter===ch.id?' on':'');
+      if(missionDoneFilter===ch.id) b.style.cssText=`background:${ch.color};color:#fff;border-color:${ch.color}`;
+      b.innerHTML=`${ch.label}<span class="rc">${ch.cnt}</span>`;
+      b.onclick=()=>{missionDoneFilter=ch.id;render();};
+      fbar.appendChild(b);
+    });
+    s3.appendChild(fbar);
+    const fdone=doneAll.filter(x=>missionDoneFilter==='all'||x.assigneeId===missionDoneFilter)
+      .sort((a,b)=>(b.approvedAt||'').localeCompare(a.approvedAt||''));
+    const scroll=document.createElement('div'); scroll.className='reclist';
+    if(!fdone.length) scroll.appendChild(el(`<div class="empty">완료한 미션이 없어요.</div>`));
+    else fdone.forEach(x=>scroll.appendChild(missionCard(x,'parent')));
+    s3.appendChild(scroll);
     v.appendChild(s3);
   }
 }
@@ -766,7 +783,9 @@ function renderMissionChild(v, me){
   if(done.length){
     const s3=document.createElement('div');s3.className='glass card';
     s3.appendChild(el(`<h2 class="sec">✅ 완료한 미션 <span class="r">${done.length}건</span></h2>`));
-    done.slice(0,20).forEach(x=>s3.appendChild(missionCard(x,'child')));
+    const scroll=document.createElement('div');scroll.className='reclist';
+    done.forEach(x=>scroll.appendChild(missionCard(x,'child')));
+    s3.appendChild(scroll);
     v.appendChild(s3);
   }
 }
