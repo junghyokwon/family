@@ -226,11 +226,11 @@
   .st.submitted{background:var(--amber-bg);color:var(--amber-tx)}
   .st.approved{background:#d9f2e6;color:var(--green)}
   .st.rejected{background:#fde0dc;color:var(--red)}
-  .chk{display:flex;flex-wrap:wrap;gap:8px}
-  .chkbtn{border:1px solid var(--line);background:var(--glass-strong);border-radius:12px;padding:9px 12px;cursor:pointer;
-    font-size:13.5px;font-weight:700;display:flex;align-items:center;gap:7px;color:var(--ink)}
+  .chk{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .chkbtn{border:1px solid var(--line);background:var(--glass-strong);border-radius:11px;padding:9px 4px;cursor:pointer;
+    font-size:12.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:4px;color:var(--ink);white-space:nowrap}
   .chkbtn.on{background:var(--brand);color:#fff;border-color:var(--brand)}
-  .chkbox{width:17px;height:17px;border-radius:5px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900}
+  .chkbox{width:15px;height:15px;flex:0 0 auto;border-radius:5px;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900}
   .dash{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
   .dcard{background:var(--glass-strong);border:1px solid var(--line);border-radius:14px;padding:12px 13px}
   .dcard .dn{font-size:14px;font-weight:800;display:flex;align-items:center;gap:7px}
