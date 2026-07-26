@@ -679,7 +679,6 @@ function renderMissionAllowance(v, kids){
 function renderMissionParent(v, me, kids){
   if(!mDraft) mDraft={title:'',criteria:'',due:todayStr(),ids:[],points:1};
   if(!mDraft.points) mDraft.points=1;
-  renderMissionAllowance(v, kids);
   const form=document.createElement('div'); form.className='glass card';
   form.appendChild(el(`<h2 class="sec">✍️ 미션 부여</h2>`));
   form.appendChild(el(`<label>대상자 (여러 명 선택 가능)</label>`));
@@ -701,6 +700,7 @@ function renderMissionParent(v, me, kids){
     <button class="btn" id="m_add">미션 부여하기</button></div>`);
   form.appendChild(body);
   v.appendChild(form);
+  renderMissionAllowance(v, kids);
   form.querySelector('#m_title').oninput=e=>mDraft.title=e.target.value;
   form.querySelector('#m_crit').oninput=e=>mDraft.criteria=e.target.value;
   form.querySelector('#m_due').oninput=e=>mDraft.due=e.target.value;
