@@ -301,7 +301,7 @@ function seed(){
       {id:'m5',name:'정재휘',child:true,unit:5},{id:'m6',name:'정재연',child:true,unit:3},
     ],
     activities:[{id:'running',name:'러닝',type:'running'},{id:'mission',name:'미션',type:'mission'}],
-    runs:[], generic:{}, payouts:{},
+    runs:[], generic:{}, payouts:{}, mpayouts:[],
     missions:[],
     pins:{m1:'0000',m2:'9999',m3:'1111',m4:'2222',m5:'3333',m6:'4444'},
   };
@@ -310,6 +310,7 @@ function seed(){
 function normalize(){
   let changed=false;
   if(!state.missions){state.missions=[];changed=true;}
+  if(!state.mpayouts){state.mpayouts=[];changed=true;}
   if(!state.pins){state.pins={m1:'0000',m2:'9999',m3:'1111',m4:'2222',m5:'3333',m6:'4444'};changed=true;}
   if(!state.activities.some(a=>a.id==='mission')){state.activities.splice(1,0,{id:'mission',name:'미션',type:'mission'});changed=true;}
   return changed;
@@ -530,17 +531,23 @@ function tryLogin(id,pin){
 
 /* ===== 미션 ===== */
 const PT_GOAL=100;
-function pointsOf(id){ return state.missions.filter(x=>x.assigneeId===id && x.status==='approved').reduce((s,x)=>s+(x.points||0),0); }
+function approvedPtsOf(id){ return state.missions.filter(x=>x.assigneeId===id && x.status==='approved').reduce((s,x)=>s+(x.points||0),0); }
+function redeemedOf(id){ return (state.mpayouts||[]).filter(p=>p.kidId===id).length*PT_GOAL; }   // 지급 1건당 100P 차감
+function pointsOf(id){ return Math.max(0, approvedPtsOf(id) - redeemedOf(id)); }                   // 게이지에 쓰는 순포인트
+function mPaidOf(id){ return (state.mpayouts||[]).filter(p=>p.kidId===id).reduce((s,p)=>s+(p.amount||0),0); }
+function mPayCntOf(id){ return (state.mpayouts||[]).filter(p=>p.kidId===id).length; }
 function pointGauge(k){
   const pts=pointsOf(k.id), pct=Math.min(100, pts/PT_GOAL*100), c=colorOf(k.id);
   const gold='#e0a92a';
   const lbl30 = pts>=30 ? gold : 'var(--muted)';
   const lbl60 = pts>=60 ? gold : 'var(--muted)';
   const lbl100 = pts>=100 ? c : 'var(--muted)';
-  const msg = pts>=100 ? '목표 100포인트 달성! 정말 자랑스러워요 🎉'
+  const msg = pts>=100 ? '🎉 100포인트 달성! 부모님께 용돈을 받을 수 있어요'
     : pts>=60 ? `60포인트 통과! 목표까지 ${PT_GOAL-pts}P 남았어요 💪`
     : pts>=30 ? `30포인트 통과, 칭찬해요! 목표까지 ${PT_GOAL-pts}P`
     : `미션을 완료하면 포인트가 쌓여요 · 목표까지 ${PT_GOAL-pts}P`;
+  const paid=mPaidOf(k.id), cnt=mPayCntOf(k.id);
+  const paidLine = paid>0 ? `<div style="margin-top:8px;font-size:12px;font-weight:800;color:var(--brand)">🎁 지금까지 받은 미션 용돈 ${fmtWon(paid)} <span style="color:var(--muted);font-weight:700">(${cnt}회)</span></div>` : '';
   const card=document.createElement('div'); card.className='glass card pgcard';
   card.innerHTML=`
     <div class="pg-head">
@@ -554,7 +561,7 @@ function pointGauge(k){
       <div class="pg-mark" style="left:60%"></div><div class="pg-mlbl" style="left:60%;color:${lbl60}">💛 칭찬</div>
       <div class="pg-mark" style="left:100%"></div><div class="pg-mlbl" style="left:100%;transform:translateX(-100%);color:${lbl100}">🎯 목표</div>
     </div>
-    <div class="muted" style="margin-top:13px;font-size:11.5px;font-weight:700">${msg}</div>`;
+    <div class="muted" style="margin-top:13px;font-size:11.5px;font-weight:700">${msg}</div>${paidLine}`;
   return card;
 }
 function renderMission(){
@@ -617,9 +624,62 @@ function renderMission(){
   if(!me.child) renderMissionParent(v, me, kids);
   else renderMissionChild(v, me);
 }
+function renderMissionAllowance(v, kids){
+  const card=document.createElement('div'); card.className='glass card';
+  card.innerHTML=`<h2 class="sec">🎁 미션 포인트 용돈 <span class="r">${PT_GOAL}P 달성마다 지급</span></h2>`;
+  kids.forEach(m=>{
+    const pts=pointsOf(m.id), c=colorOf(m.id), ready=pts>=PT_GOAL;
+    const paid=mPaidOf(m.id), cnt=mPayCntOf(m.id);
+    const box=document.createElement('div'); box.className='allow';
+    box.innerHTML=`
+      <div class="allow-top">
+        <div class="allow-name"><span class="init" style="width:30px;height:30px;border-radius:10px;font-size:13px;background:${c}">${initial(m.name)}</span>${m.name}</div>
+        <div>${ready?`<span class="chip a">지급 가능</span>`:`<span class="chip" style="background:rgba(120,130,150,.15);color:var(--muted)">진행 중</span>`}</div>
+      </div>
+      <div class="muted">목표까지 <b style="color:${c}">${pts}/${PT_GOAL}P</b>${ready?` · <b style="color:var(--amber-tx)">지급 대기!</b>`:''}</div>
+      <div class="prog"><i style="width:${Math.min(100,pts/PT_GOAL*100)}%;background:${c}"></i></div>
+      <div class="astats">
+        <span>현재 <b>${pts}P</b></span>
+        <span>지급 <b>${cnt}회</b></span>
+        <span>받은 용돈 <b>${fmtWon(paid)}</b></span>
+      </div>
+      <div class="aact">
+        <button class="btn btn-sm btn-blue" data-pay ${ready?'':'disabled style="opacity:.45"'}>용돈 지급</button>
+        ${cnt>0?`<button class="btn btn-sm btn-soft" data-undo>지급 취소</button>`:''}
+      </div>`;
+    const pay=box.querySelector('[data-pay]');
+    if(pay&&ready) pay.onclick=()=>{
+      const raw=prompt(`${m.name}에게 지급할 미션 용돈 금액을 입력하세요 (원)`,'');
+      if(raw===null) return;
+      const amt=parseInt(String(raw).replace(/[^0-9]/g,''),10);
+      if(!amt||amt<=0){ toast('금액을 올바르게 입력해 주세요'); return; }
+      state.mpayouts.push({id:uid(),kidId:m.id,amount:amt,date:todayStr()});
+      save(); render(); toast(`${m.name} 미션 용돈 ${fmtWon(amt)} 지급! 🎁`);
+      notifyPush([m.id],'미션 용돈 지급! 🎁',`${fmtWon(amt)}을 받았어요! 포인트가 초기화됐어요`,'/');
+    };
+    const undo=box.querySelector('[data-undo]');
+    if(undo) undo.onclick=()=>{
+      if(!confirm(`${m.name}의 가장 최근 미션 용돈 지급을 취소할까요? (포인트 100P 복구)`)) return;
+      const list=state.mpayouts.filter(p=>p.kidId===m.id);
+      const last=list[list.length-1];
+      if(last){ state.mpayouts=state.mpayouts.filter(p=>p.id!==last.id); save(); render(); toast('지급 1건 취소 (포인트 복구)'); }
+    };
+    card.appendChild(box);
+  });
+  const hist=[...(state.mpayouts||[])].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).slice(0,10);
+  if(hist.length){
+    card.appendChild(el(`<div class="msec" style="margin-top:12px">🧾 최근 지급 내역</div>`));
+    hist.forEach(p=>{
+      const nm=(member(p.kidId)||{}).name||'?';
+      card.appendChild(el(`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:5px 2px;border-top:1px solid var(--hair)"><span>${fmtDate(p.date)} · ${nm}</span><b>${fmtWon(p.amount)}</b></div>`));
+    });
+  }
+  v.appendChild(card);
+}
 function renderMissionParent(v, me, kids){
   if(!mDraft) mDraft={title:'',criteria:'',due:todayStr(),ids:[],points:1};
   if(!mDraft.points) mDraft.points=1;
+  renderMissionAllowance(v, kids);
   const form=document.createElement('div'); form.className='glass card';
   form.appendChild(el(`<h2 class="sec">✍️ 미션 부여</h2>`));
   form.appendChild(el(`<label>대상자 (여러 명 선택 가능)</label>`));
@@ -690,6 +750,13 @@ function renderMissionChild(v, me){
   if(!todo.length) s1.appendChild(el(`<div class="empty">지금 해야 할 미션이 없어요. 잘하고 있어요! 👍</div>`));
   else todo.forEach(x=>s1.appendChild(missionCard(x,'child')));
   v.appendChild(s1);
+  const mypays=[...(state.mpayouts||[])].filter(p=>p.kidId===me.id).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(mypays.length){
+    const sp=document.createElement('div');sp.className='glass card';
+    sp.appendChild(el(`<h2 class="sec">🎁 받은 미션 용돈 <span class="r">총 ${fmtWon(mPaidOf(me.id))}</span></h2>`));
+    mypays.forEach(p=>sp.appendChild(el(`<div style="display:flex;justify-content:space-between;font-size:13px;padding:7px 2px;border-top:1px solid var(--hair)"><span>${fmtDate(p.date)}</span><b style="color:var(--brand)">${fmtWon(p.amount)}</b></div>`)));
+    v.appendChild(sp);
+  }
   if(wait.length){
     const s2=document.createElement('div');s2.className='glass card';
     s2.appendChild(el(`<h2 class="sec">⏳ 승인 기다리는 중 <span class="r">${wait.length}건</span></h2>`));
